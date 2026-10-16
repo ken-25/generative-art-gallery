@@ -27,6 +27,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
  try{
   const page=await browser.newPage({acceptDownloads:true});const errors=[];
   await page.addInitScript(()=>{
+   window.open=(url,target,features)=>{window.__opened={url,target,features};return null;};
    Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.__copyFail)throw Error('copy failed');window.__copied=text;}}});
    Object.defineProperty(navigator,'share',{value:async data=>{if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
    Object.defineProperty(navigator,'canShare',{value:()=>window.__canShare!==false});
@@ -111,8 +112,8 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
      const svg=document.querySelector('#art svg'),box=svg.viewBox.baseVal;
      const image=new Image();await new Promise((r,j)=>{image.onload=r;image.onerror=j;image.src='data:image/png;base64,'+data;});const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const corner=[...ctx.getImageData(0,0,1,1).data];ctx.fillStyle=svg.querySelector('rect').getAttribute('fill');ctx.fillRect(0,0,1,1);const background=[...ctx.getImageData(0,0,1,1).data];return {ratio:box.width/box.height,corner,background};
     },pngBytes.toString('base64'));assert.ok(Math.abs(pw/ph-raster.ratio)<.01);assert.deepEqual(raster.corner,raster.background,slug+' PNG background retained');
-    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const urlForShare=await page.locator('textarea').inputValue();
-    for(const key of ['x','line','facebook']){const href=await page.locator(`[data-social=${key}]`).getAttribute('href');assert.equal(new URL(href).searchParams.get(key==='facebook'?'u':'url'),urlForShare);}
+    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const urlForShare=await page.locator('textarea').inputValue();assert.equal(new URL(await page.locator('#settings').getAttribute('action')).hash,'');assert.equal(await page.locator('a[data-social]').count(),0,'SNS uses buttons to avoid automatic outbound link tracking');
+    for(const key of ['x','line','facebook']){const href=await page.locator(`[data-social=${key}]`).getAttribute('data-share-url');assert.equal(new URL(href).searchParams.get(key==='facebook'?'u':'url'),urlForShare);await page.locator(`[data-social=${key}]`).click();assert.equal(await page.evaluate(()=>window.__opened.url),href);assert.match(await page.evaluate(()=>window.__opened.features),/noopener,noreferrer/);}
     if(await seed.count()){await seed.fill('日本語 & # / % " <>');await seed.dispatchEvent('change');await settle();await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const unicodeURL=await page.locator('textarea').inputValue();assert.equal(JSON.parse(decodeURIComponent(new URL(unicodeURL).hash.slice(5))).settings.seed,'日本語 & # / % " <>');await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),unicodeURL);}else{await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),urlForShare);}
 
     await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__shared.files[0].type),'image/png');

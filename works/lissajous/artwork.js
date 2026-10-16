@@ -39,7 +39,7 @@
     render(); sync();
     const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n', G.svg(current)], {type: 'image/svg+xml;charset=utf-8'});
     const url = URL.createObjectURL(blob), link = document.createElement('a');
-    link.href = url; link.download = `lissajous-${current.freqX}-${current.freqY}-${current.phase}deg.svg`;
+    link.href = url; link.download = 'lissajous.svg';
     document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     status.textContent = 'SVG の保存を開始しました。';

@@ -28,7 +28,7 @@ test('mock Google tag initializes once and never reads or sends settings/seed',a
  const code=await readFile('assets/analytics.js','utf8'),scripts=[];
  const document={title:'固定の作品名',querySelector:selector=>selector==='script[data-google-tag-id]'?{dataset:{googleTagId:'G-TEST000000'}}:{href:'https://example.org/sub/work/?s=SECRET_SEED#art=SECRET_SEED'},createElement:()=>({}),head:{append:s=>scripts.push(s)}};
  const c={window:{},document,URL,Date};vm.createContext(c);vm.runInContext(code,c);vm.runInContext(code,c);
- assert.equal(scripts.length,1);assert.equal(c.window.dataLayer.filter(x=>x[0]==='config').length,1);assert.equal(c.window.dataLayer.filter(x=>x[1]==='page_view').length,1);
+ assert.equal(scripts.length,1);assert.equal(scripts[0].referrerPolicy,'no-referrer');assert.equal(c.window.dataLayer.filter(x=>x[0]==='config').length,1);assert.equal(c.window.dataLayer.filter(x=>x[1]==='page_view').length,1);
  c.window.GalleryAnalytics.track('share_social','line',{seed:'SECRET_SEED'});c.window.GalleryAnalytics.track('bad','SECRET_SEED');
  const events=c.window.dataLayer.filter(x=>x[0]==='event');assert.equal(events.length,2);assert.equal(events[1][2].method,'line');assert.doesNotMatch(JSON.stringify(c.window.dataLayer),/SECRET_SEED|#art|\?s=/);
  assert.equal(c.window.dataLayer.find(x=>x[0]==='config')[2].send_page_view,false);

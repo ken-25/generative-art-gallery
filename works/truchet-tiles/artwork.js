@@ -30,7 +30,7 @@
     render(); sync();
     const blob = new Blob(['<?xml version="1.0" encoding="UTF-8"?>\n', TruchetGenerator.svg(current)], {type: 'image/svg+xml;charset=utf-8'});
     const url = URL.createObjectURL(blob), link = document.createElement('a');
-    link.href = url; link.download = `truchet-tiles-${current.seed.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 60)}.svg`;
+    link.href = url; link.download = 'truchet-tiles.svg';
     document.body.append(link); link.click(); link.remove();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
     status.textContent = 'SVG の保存を開始しました。';

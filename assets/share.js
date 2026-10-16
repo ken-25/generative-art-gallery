@@ -48,6 +48,7 @@
  }
  function attach(G,render) {
   const form=document.getElementById('settings');
+  const destination=new URL(location.href);destination.search='';destination.hash='';form.action=destination.href;
   const box=document.createElement('div');
   const button=document.createElement('button');button.type='button';button.textContent='この絵を共有';
   const label=document.createElement('label');label.textContent='共有URL（選択してコピーできます）';label.hidden=true;
@@ -59,7 +60,7 @@
   const native=document.createElement('button');native.type='button';native.textContent='端末でリンクを共有';native.id='share-native';native.hidden=typeof navigator.share!=='function';
   const imageShare=document.createElement('button');imageShare.type='button';imageShare.textContent='現在のPNGを共有';imageShare.id='share-png';
   const social=document.createElement('nav');social.className='social-links';social.setAttribute('aria-label','SNSでリンクを共有');
-  const anchors={};for(const [key,text]of [['x','X'],['line','LINE'],['facebook','Facebook']]){const a=document.createElement('a');a.textContent=text;a.target='_blank';a.rel='noopener noreferrer';a.dataset.social=key;anchors[key]=a;social.append(a);a.addEventListener('click',()=>track('share_social',key));}
+  const anchors={};for(const [key,text]of [['x','X'],['line','LINE'],['facebook','Facebook']]){const a=document.createElement('button');a.type='button';a.textContent=text;a.dataset.social=key;anchors[key]=a;social.append(a);a.addEventListener('click',()=>{window.open(socialLinks(shareURL(),title)[key],'_blank','noopener,noreferrer');track('share_social',key);});}
   const hint=document.createElement('p');hint.className='share-note';hint.textContent='リンクのカードには作品の固定プレビューが表示されます。調整した絵はPNGで保存・共有できます。';
   options.append(copy,native,imageShare,social,hint);box.append(button,options,label,message);
   // One action layout for both hand-authored works and schema-based studies.
@@ -83,7 +84,7 @@
   imageShare.addEventListener('click',()=>withPNG(async blob=>{const file=new File([blob],slug+'.png',{type:'image/png'});if(!navigator.share||!navigator.canShare?.({files:[file]})){status.textContent='画像の共有に対応していません。PNG保存とリンクのコピーをご利用ください。';return;}await navigator.share({files:[file],title});status.textContent='PNGを共有しました。';track('share_image','png');}));
   actions.append(row,download,resolution,png,box,note,status);form.append(actions);
   for(const empty of form.querySelectorAll('.button-row'))if(!empty.children.length)empty.remove();
-  const clear=()=>{field.value='';label.hidden=true;options.hidden=true;for(const a of Object.values(anchors))a.removeAttribute('href');message.textContent='';};
+  const clear=()=>{field.value='';label.hidden=true;options.hidden=true;for(const a of Object.values(anchors))delete a.dataset.shareUrl;message.textContent='';};
   form.addEventListener('reset',clear);form.addEventListener('input',event=>{if(event.target.name)clear();});
   document.getElementById('new-seed')?.addEventListener('click',clear);
   for(const preset of form.querySelectorAll('[data-preset]'))preset.addEventListener('click',clear);
@@ -97,7 +98,7 @@
    } catch(e){message.textContent=e.message+' 初期設定を表示しています。';for(const [k,v] of Object.entries(G.defaults))form.elements.namedItem(k).value=v;render();}
   };
   const shareURL=()=>{const url=new URL(location.href);url.search='';url.hash='';url.pathname=url.pathname.replace(/index\.html$/,'');url.hash=encode(read(),G);return url.href;};
-  const update=()=>{field.value=shareURL();label.hidden=false;options.hidden=false;const links=socialLinks(field.value,title);for(const [key,a]of Object.entries(anchors))a.href=links[key];return field.value;};
+  const update=()=>{field.value=shareURL();label.hidden=false;options.hidden=false;const links=socialLinks(field.value,title);for(const [key,a]of Object.entries(anchors))a.dataset.shareUrl=links[key];return field.value;};
   const copyLink=async()=>{const url=update();try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(url);message.textContent='共有URLをコピーしました。';track('share_link','copy');}catch{field.focus();field.select();message.textContent='自動コピーできませんでした。URLを選択して手動でコピーしてください。';}};
   button.addEventListener('click',copyLink);copy.addEventListener('click',copyLink);
   native.addEventListener('click',async()=>{try{await navigator.share({title,url:update()});message.textContent='リンクを共有しました。';track('share_native','native');}catch(e){message.textContent=e.name==='AbortError'?'共有をキャンセルしました。':'端末で共有できませんでした。リンクをコピーして共有できます。';}});

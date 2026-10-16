@@ -16,5 +16,5 @@
  const events=new Set(['download_svg','download_png','share_link','share_native','share_image','share_social']);
  const methods=new Set(['svg','png','copy','native','x','line','facebook']);
  window.GalleryAnalytics=Object.freeze({track:(event,method)=>{if(events.has(event)&&methods.has(method))gtag('event',event,{method,page_location:clean.href,page_referrer:''});}});
- const remote=document.createElement('script');remote.async=true;remote.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);document.head.append(remote);
+ const remote=document.createElement('script');remote.async=true;remote.referrerPolicy='no-referrer';remote.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);document.head.append(remote);
 })();
