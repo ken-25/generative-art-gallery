@@ -1,7 +1,7 @@
 {
   "slug": "density-field",
   "title": "密度の丘",
-  "description": "二つの密度の山から、点の大きさと間隔が変わる。",
+  "description": "密度の山が、点の大きさと並びにゆらぎをつくる。",
   "addedAt": "2026-10-16T11:16:00Z",
   "tags": [
     "mathematics",
@@ -11,7 +11,7 @@
   "sources": [
     {
       "url": "https://bridget-riley.publications.britishart.yale.edu/catalogue/1/",
-      "label": "Issue #16提供：Riley Movement in Squares（1961）（原図未実見）"
+      "label": "Riley Movement in Squares（1961）"
     }
   ]
 }

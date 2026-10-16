@@ -2,9 +2,13 @@
   "private": true,
   "scripts": {
     "build": "node scripts/build.mjs",
-    "test": "node --test scripts/*.test.mjs works/*/*.test.cjs"
+    "test": "node --test scripts/*.test.mjs works/*/*.test.cjs",
+    "test:browser": "node scripts/studio-dom.cjs"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "playwright": "1.62.1"
   }
 }
