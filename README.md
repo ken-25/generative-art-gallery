@@ -13,7 +13,7 @@ npm run build
 python3 -m http.server 8000 --directory dist
 ```
 
-`http://localhost:8000/` を開きます。配信するのは `dist/` です。閲覧時はHTML/CSS/JavaScriptだけで動き、外部API・CDN・フォントは使いません。Playwrightは開発時のブラウザ検証用です。
+`http://localhost:8000/` を開きます。配信するのは `dist/` です。計測未設定時はHTML/CSS/JavaScriptだけで動き、外部API・CDN・フォントは使いません。計測設定時のみGoogleの外部スクリプトを読み込みます。Playwrightは開発時のブラウザ検証用です。
 
 ## 操作と共有
 
