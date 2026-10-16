@@ -53,3 +53,23 @@ npm run test:browser
 ## 利用条件・資料
 
 [共通の利用条件](about/index.html#terms)、[MITライセンス](LICENSE)、[資料と実装の由来](THIRD_PARTY_NOTICES.md)を参照してください。作品ページは操作と出典を中心にし、資料の確認状況や作品固有の制作記録は詳細側にまとめています。
+
+## PNG保存とSNS共有
+
+全作品の共通パネルからSVGとPNGを保存できます。PNGは現在の設定・配色・背景を描き、長辺1600px／2400pxから選べます。縦横比は整数ピクセルに丸める範囲で維持し、最大4096px・800万画素に制限します。変換中の重複処理を防ぎ、Canvasと一時URLを解放します。SVGの設定メタデータはPNGには埋め込みません。
+
+「この絵を共有」で設定入りURLと共有先を表示します。リンクのコピー、対応端末の標準共有、X・LINE・Facebookへのリンク共有を使えます。端末がファイル共有に対応している場合は現在のPNGも共有できます。非対応・中断・エラー時は画面に案内し、PNG保存とリンクコピーを利用できます。共有先の画面を開くだけで、自動投稿はしません。
+
+共有URLの `#art=` はSNSクローラーに送信されません。カードには作品ごとの固定プレビューWebPを使用し、調整後の絵の動的カード生成は行いません。調整した画像を投稿する場合はPNGを添付してください。ビルドは作品とAbout／トップのtitle・description・canonical・OGP・Twitter summary Card、絶対画像URL・実際の画像寸法・altを生成します。既存の320pxプレビューを使い、各SNSによるトリミングやキャッシュ、実際のカード表示はプラットフォーム側の扱いによります。
+
+## 任意のGoogleタグ
+
+仮の推奨変数名は `GOOGLE_TAG_ID` です。リポジトリまたは既存の `github-pages` Environmentの **Actions Variables** からPagesのbuild jobへ渡します。buildにも既存Environmentを指定しており、Environmentの保護ルールがある場合はbuildにも適用されます。変数・Secrets・権限の作成や変更を行うコードはありません。
+
+空欄では計測スクリプトも外部Googleタグも出力しません。非空の値は `G-`／`GT-` と英大文字・数字の形式を検証し、不正なら値を表示せずビルドを失敗させます。タグIDはビルド後のHTMLに含まれる公開情報であり、秘密値を指定しないでください。変数名・IDの確認と設定はオーナーが行い、変更後は再ビルドします。
+
+計測するのは固定URLのページ閲覧と保存・共有の操作種別です。コードはURLのquery／fragment、調整値、seed、コピーしたURL、入力内容をイベントに渡さず、canonicalをpage_locationに指定し、referrerも空にします。広告パーソナライズ／Google signalsは無効にします。Google管理画面側の拡張計測・カスタムタグの設定はこのコードから確認・変更できないため、有効化前に拡張計測（とくに外部リンク・フォーム・履歴変更など）を無効にし、設定入りURLを自動収集しないことをオーナーが確認してください。
+
+CIとローカル回帰はID未設定で実行し、タグ有効時の検査はテスト用IDとモックだけを使います。実際のGoogleへの送信やSNS投稿はテストしません。
+
+参照: [Googleタグ](https://developers.google.com/tag-platform/gtagjs)、[Actions Variables](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)、[Open Graph](https://ogp.me/)、[LINE共有](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/)。

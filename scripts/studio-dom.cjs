@@ -26,6 +26,12 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
  const browser=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
  try{
   const page=await browser.newPage({acceptDownloads:true});const errors=[];
+  await page.addInitScript(()=>{
+   Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.__copyFail)throw Error('copy failed');window.__copied=text;}}});
+   Object.defineProperty(navigator,'share',{value:async data=>{if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
+   Object.defineProperty(navigator,'canShare',{value:()=>window.__canShare!==false});
+  });
+  await page.route(/googletagmanager\.com|google-analytics\.com/,route=>{errors.push('Unexpected live analytics');return route.abort();});
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const state=()=>page.evaluate(()=>({svg:document.querySelector('#art').innerHTML,settings:[...document.querySelector('form').elements].filter(e=>e.name).map(e=>[e.name,e.type==='radio'?e.checked:e.value])}));
@@ -36,6 +42,10 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     const url=base+'works/'+slug+'/';
     for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
     const initial=await state();
+    assert.equal(await page.locator('script[data-google-tag-id]').count(),0,'default build has no live analytics');
+    const metadata=await page.evaluate(()=>Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],link[rel=canonical]')].map(e=>[e.getAttribute('property')||e.getAttribute('name')||'canonical',e.content||e.href])));
+    assert.equal(metadata['twitter:card'],'summary');assert.equal(metadata['og:url'],catalog.find(m=>m.slug===slug).url);assert.equal(metadata.canonical,metadata['og:url']);assert.ok(metadata['og:image'].startsWith('https://'));assert.ok(metadata['twitter:image:alt']);assert.ok(Number(metadata['og:image:width'])>0&&Number(metadata['og:image:height'])>0);
+
     const contract=legacy[slug]?{schema:false,fields:legacy[slug]}:await page.evaluate(()=>{
      const G=window.StudyGenerator;if(!G||!window.StudyControls)throw Error('Missing schema generator or definitions');
      const fields={};
@@ -96,6 +106,26 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const shared=await page.locator('textarea').inputValue();const expected=await state();assert.ok(shared.includes(prefix+'works/'+slug+'/')&&shared.includes('#art='));await page.goto(shared);await settle();assert.deepEqual(await state(),expected,slug+' share restores exact drawing and form');
     await page.locator('.skip').focus();await page.keyboard.press('Enter');await settle();assert.deepEqual(await state(),expected,slug+' skip link preserves drawing');
     const downloading=page.waitForEvent('download');await page.locator('#download').click();const download=await downloading;assert.equal(await download.failure(),null);const svg=await fs.readFile(await download.path(),'utf8');assert.match(svg,/<svg/);assert.match(svg,/<metadata>/);assert.ok(svg.includes(expected.svg.slice(0,30)),slug+' downloaded SVG');
+    const pngWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const pngDownload=await pngWaiting;assert.equal(await pngDownload.failure(),null);const pngBytes=await fs.readFile(await pngDownload.path());assert.equal(pngBytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(pngBytes.length>1000);const pw=pngBytes.readUInt32BE(16),ph=pngBytes.readUInt32BE(20);assert.equal(Math.max(pw,ph),1600);assert.ok(pw*ph<=8e6);
+    const raster=await page.evaluate(async data=>{
+     const svg=document.querySelector('#art svg'),box=svg.viewBox.baseVal;
+     const image=new Image();await new Promise((r,j)=>{image.onload=r;image.onerror=j;image.src='data:image/png;base64,'+data;});const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const corner=[...ctx.getImageData(0,0,1,1).data];ctx.fillStyle=svg.querySelector('rect').getAttribute('fill');ctx.fillRect(0,0,1,1);const background=[...ctx.getImageData(0,0,1,1).data];return {ratio:box.width/box.height,corner,background};
+    },pngBytes.toString('base64'));assert.ok(Math.abs(pw/ph-raster.ratio)<.01);assert.deepEqual(raster.corner,raster.background,slug+' PNG background retained');
+    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const urlForShare=await page.locator('textarea').inputValue();
+    for(const key of ['x','line','facebook']){const href=await page.locator(`[data-social=${key}]`).getAttribute('href');assert.equal(new URL(href).searchParams.get(key==='facebook'?'u':'url'),urlForShare);}
+    if(await seed.count()){await seed.fill('日本語 & # / % " <>');await seed.dispatchEvent('change');await settle();await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const unicodeURL=await page.locator('textarea').inputValue();assert.equal(JSON.parse(decodeURIComponent(new URL(unicodeURL).hash.slice(5))).settings.seed,'日本語 & # / % " <>');await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),unicodeURL);}else{await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),urlForShare);}
+
+    await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__shared.files[0].type),'image/png');
+    if(slug==='probability-segments'){
+     await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('キャンセル'));
+     await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('作成・共有できません'));assert.equal(await page.locator('#share-png').isDisabled(),false);
+     await page.locator('#png-size').selectOption('2400');const highWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const high=await highWaiting;const bytes=await fs.readFile(await high.path());assert.equal(Math.max(bytes.readUInt32BE(16),bytes.readUInt32BE(20)),2400);
+    }
+    await page.evaluate(()=>{window.__copyFail=true;});await page.locator('#copy-link').click();assert.match(await page.locator('.share-controls>p').textContent(),/手動/);
+    await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-native').click();assert.match(await page.locator('.share-controls>p').textContent(),/キャンセル/);
+    await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-native').click();assert.match(await page.locator('.share-controls>p').textContent(),/コピー/);
+    await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('画像の共有に対応していません'));
+    if(process.env.GALLERY_QA_DIR&&['order-and-chance','probability-segments'].includes(slug)){await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`sharing-${slug}-${width}.png`),fullPage:true});}
     await page.getByRole('button',{name:'この絵を共有',exact:true}).click();await page.getByRole('button',{name:'リセット',exact:true}).click();await settle();assert.deepEqual(await state(),initial,slug+' resets all settings');assert.equal(await page.locator('textarea').inputValue(),'');assert.equal(await page.locator('.share-controls>label').isVisible(),false,slug+' hides stale share URL');
     await page.goto(url+'#art=%7B');await settle();assert.deepEqual(await state(),initial);assert.match(await page.locator('.share-controls>p').textContent(),/初期設定/);
     if(process.env.GALLERY_QA_DIR&&['recursive-regions','hex-transitions','probability-segments'].includes(slug)){await page.goto(url);await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`after-${slug}-${width}.png`),fullPage:true});}
