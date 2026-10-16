@@ -1,0 +1,6 @@
+# Local verification and transfer artifacts
+evidence/
+tests/
+*.zip
+dist/
+node_modules/

@@ -1,0 +1,4 @@
+{
+  "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22bands%22%3A4%2C%22stacks%22%3A5%2C%22layers%22%3A8%2C%22gap%22%3A6%2C%22rotation%22%3A16%2C%22shift%22%3A10%2C%22dropout%22%3A0.08%2C%22correlation%22%3A0.7%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22%E4%BF%9D%E5%AD%98%E6%B8%88%E3%81%BF%20%23%20%26%20%E6%97%A5%E6%9C%AC%E8%AA%9E%22%7D%7D",
+  "svgSha256": "06da5c0d1767970b62b29514d0c42351d19d29f4624246d287f05c7f51152678"
+}

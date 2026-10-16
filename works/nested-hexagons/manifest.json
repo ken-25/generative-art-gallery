@@ -1,0 +1,17 @@
+{
+  "slug": "nested-hexagons",
+  "title": "重なる六つの辺",
+  "description": "不等な帯の中で、六角形の層が寄り添い、少しずつずれる。",
+  "addedAt": "2026-10-16T11:19:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://dam.org/museum/artists_ui/artists/molnar-vera/des-ordres/",
+      "label": "Issue #19提供：Molnár (Des)Ordres（1974）（原図未実見）"
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "probability-segments",
+  "title": "三つの分布",
+  "description": "領域ごとの密度と方向の重みから、短い線の群れを作る。",
+  "addedAt": "2026-10-16T11:20:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://www.chilton-computing.org.uk/ChiltonCatalog/www.content-animation.org.uk/htmls/nolla.htm",
+      "label": "Issue #20提供：Noll Computer Composition with Lines（1964）（原図未実見）"
+    }
+  ]
+}

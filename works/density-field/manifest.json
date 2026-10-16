@@ -1,0 +1,17 @@
+{
+  "slug": "density-field",
+  "title": "密度の丘",
+  "description": "二つの密度の山から、点の大きさと間隔が変わる。",
+  "addedAt": "2026-10-16T11:16:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://bridget-riley.publications.britishart.yale.edu/catalogue/1/",
+      "label": "Issue #16提供：Riley Movement in Squares（1961）（原図未実見）"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "private": true,
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test scripts/*.test.mjs works/*/*.test.cjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

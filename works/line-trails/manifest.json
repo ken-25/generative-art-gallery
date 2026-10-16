@@ -1,0 +1,17 @@
+{
+  "slug": "line-trails",
+  "title": "線の航跡",
+  "description": "帯ごとの流れに沿って、折れ線が進み、ときどき戻る。",
+  "addedAt": "2026-10-16T11:13:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://www.emohr.com/mohr_algo_021b.html",
+      "label": "Issue #13提供：Mohr P-021/A + B（1969）（原図未実見）"
+    }
+  ]
+}

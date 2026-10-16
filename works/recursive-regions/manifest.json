@@ -1,0 +1,18 @@
+{
+  "slug": "recursive-regions",
+  "title": "分かれる余白",
+  "description": "三角形の分割と線の密度で、領域の表情を探る。",
+  "addedAt": "2026-10-16T11:03:00Z",
+  "tags": [
+    "geometry",
+    "partition",
+    "density"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://zkm.de/en/artworks/hommage-a-paul-klee-nr-2",
+      "label": "Issue #12提供の歴史的参照：Nakeの1965年作（原図未実見）"
+    }
+  ]
+}

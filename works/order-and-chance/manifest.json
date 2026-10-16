@@ -1,0 +1,21 @@
+{
+  "slug": "order-and-chance",
+  "title": "秩序とゆらぎ",
+  "description": "整然と並ぶ正方形が、少しずつ自由になる。",
+  "addedAt": "2026-10-16T02:51:20Z",
+  "tags": [
+    "geometry",
+    "randomness"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://www.kunsthalle-bremen.de/de/view/exhibitions/exb-page/und-jetzt-du",
+      "label": "Kunsthalle Bremen — Und jetzt Du!"
+    },
+    {
+      "url": "https://ems.andrew.cmu.edu/2022f/deliverables/2-creative-code/index.html",
+      "label": "Carnegie Mellon University — Creative Code"
+    }
+  ]
+}

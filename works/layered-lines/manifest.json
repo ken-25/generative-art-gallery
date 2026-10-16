@@ -1,0 +1,17 @@
+{
+  "slug": "layered-lines",
+  "title": "角度の重なり",
+  "description": "不等な三つの領域に、角度の異なる線群を重ねる。",
+  "addedAt": "2026-10-16T11:15:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://massmoca.org/event/walldrawing11/",
+      "label": "Issue #15提供：LeWitt Wall Drawing 11（原図未実見）"
+    }
+  ]
+}

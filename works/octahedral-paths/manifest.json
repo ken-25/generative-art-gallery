@@ -1,0 +1,17 @@
+{
+  "slug": "octahedral-paths",
+  "title": "辺をたどる影",
+  "description": "八面体の辺を選び、角度を変えて平面へ映す。",
+  "addedAt": "2026-10-16T11:14:00Z",
+  "tags": [
+    "mathematics",
+    "study"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://emohr.com/mohr_cube1_176.html",
+      "label": "Issue #14提供：Mohr P-176（1975）（原図未実見）"
+    }
+  ]
+}

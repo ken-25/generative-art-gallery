@@ -1,0 +1,25 @@
+{
+  "slug": "lissajous",
+  "title": "ふたつの振動",
+  "description": "横と縦、ふたつの周期が重なって一本の線になる。",
+  "addedAt": "2026-10-16T09:38:19Z",
+  "tags": [
+    "mathematics",
+    "oscillation"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "url": "https://bibliotheque-archives.yvelines.fr/concept?id=5fa2e490-3cd9-449a-9759-b7b4d4d4d926",
+      "label": "Archives des Yvelines — Jules-Antoine Lissajous（人物典拠）"
+    },
+    {
+      "url": "https://gallica.bnf.fr/ark:/12148/bpt6k65708374/f151",
+      "label": "Gallica (BnF) — 1857年の原資料の所在"
+    },
+    {
+      "url": "https://americanhistory.si.edu/collections/object/nmah_1822842",
+      "label": "Smithsonian National Museum of American History — 関連装置"
+    }
+  ]
+}

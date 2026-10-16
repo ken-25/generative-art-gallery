@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "order-and-chance",
+    "file": "generator.js",
+    "key": "ArtGenerator",
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22position%22%3A0.75%2C%22rotation%22%3A65%2C%22growth%22%3A1.7%2C%22columns%22%3A7%2C%22rows%22%3A22%2C%22seed%22%3A%22%E4%BF%9D%E5%AD%98%E6%B8%88%E3%81%BF%20%26%20%23%22%7D%7D",
+    "svgSha256": "c21e6763f99f257246c3666e49b3c82cc63cd0b995e25878bb2a5f19b5bccec7"
+  },
+  {
+    "slug": "truchet-tiles",
+    "file": "truchet-generator.js",
+    "key": "TruchetGenerator",
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22columns%22%3A7%2C%22rows%22%3A12%2C%22nw%22%3A25%2C%22ne%22%3A25%2C%22se%22%3A25%2C%22sw%22%3A25%2C%22seed%22%3A%22%E4%BF%9D%E5%AD%98%E6%B8%88%E3%81%BF%20%26%20%23%22%7D%7D",
+    "svgSha256": "71c636bbedfdd9df5ff9e86d513e64fbb18645a2c74c000ace5083d97f46cfb7"
+  },
+  {
+    "slug": "lissajous",
+    "file": "lissajous.js",
+    "key": "LissajousGenerator",
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22freqX%22%3A3%2C%22freqY%22%3A2%2C%22phase%22%3A37%2C%22ampX%22%3A1%2C%22ampY%22%3A1%2C%22weight%22%3A1.6%2C%22palette%22%3A%22night%22%7D%7D",
+    "svgSha256": "62d36f0bfd7a7544af1686faea0974a513b35a77ffa41881ac7083ff42589045"
+  }
+]
