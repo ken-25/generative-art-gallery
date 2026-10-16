@@ -6,6 +6,7 @@ const path=require('node:path');
 const http=require('node:http');
 const crypto=require('node:crypto');
 const portableSVG=require('./svg-compat.cjs');
+const comparePNG=require('./png-reference.cjs');
 const {inspectControls,legacy}=require('./control-contract.cjs');
 (async()=>{
  const root=path.resolve('dist'),catalog=JSON.parse(await fs.readFile(path.join(root,'catalog.json')));
@@ -27,9 +28,12 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
  try{
   const page=await browser.newPage({acceptDownloads:true});const errors=[];
   await page.addInitScript(()=>{
+   const toBlob=HTMLCanvasElement.prototype.toBlob;
+   HTMLCanvasElement.prototype.toBlob=function(callback,...args){window.__pngConversions=(window.__pngConversions||0)+1;return toBlob.call(this,blob=>{if(window.__holdPNG)window.__releasePNG=()=>{window.__releasePNG=null;callback(blob);};else callback(blob);},...args);};
+   Object.defineProperty(navigator,'userActivation',{value:{get isActive(){return window.__activation!==false;}}});
    window.open=(url,target,features)=>{window.__opened={url,target,features};return null;};
    Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.__copyFail)throw Error('copy failed');window.__copied=text;}}});
-   Object.defineProperty(navigator,'share',{value:async data=>{if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
+   Object.defineProperty(navigator,'share',{value:async data=>{window.__shareCalls=(window.__shareCalls||0)+1;window.__shareWasActive=navigator.userActivation.isActive;if(data.files)window.__sharedFile=data.files[0];if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
    Object.defineProperty(navigator,'canShare',{value:()=>window.__canShare!==false});
   });
   await page.route(/googletagmanager\.com|google-analytics\.com/,route=>{errors.push('Unexpected live analytics');return route.abort();});
@@ -37,12 +41,19 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const state=()=>page.evaluate(()=>({svg:document.querySelector('#art').innerHTML,settings:[...document.querySelector('form').elements].filter(e=>e.name).map(e=>[e.name,e.type==='radio'?e.checked:e.value])}));
   const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const exportPNG=async()=>{const waiting=page.waitForEvent('download');await page.locator('#download-png').click();const d=await waiting;assert.equal(await d.failure(),null);return fs.readFile(await d.path());};
+  const svgSnapshot=()=>page.locator('#art svg').evaluate(e=>new XMLSerializer().serializeToString(e));
+  const verifyPixels=async(svg,bytes,label)=>{const result=await page.evaluate(comparePNG,{svg,png:bytes.toString('base64')});assert.ok(result.meanError<1,`${label}: overall pixel error ${result.meanError}`);assert.ok(result.inkError<4,`${label}: foreground pixel error ${result.inkError}`);return result;};
+
   for(const width of [1440,375]){
    await page.setViewportSize({width,height:1000});
    for(const {slug} of catalog){
     const url=base+'works/'+slug+'/';
     for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
     const initial=await state();
+    const initialReference=await svgSnapshot(),initialPNG=await exportPNG();const initialPixels=await verifyPixels(initialReference,initialPNG,slug+' default SVG/PNG');assert.ok(initialPixels.ink>100,slug+' nonempty default drawing');
+    if(slug==='order-and-chance'&&width===1440){const blank=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=1600;c.height=1600;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);return c.toDataURL().split(',')[1];});await assert.rejects(verifyPixels(initialReference,Buffer.from(blank,'base64'),'blank PNG must fail'));}
+
     assert.equal(await page.locator('script[data-google-tag-id]').count(),0,'default build has no live analytics');
     const metadata=await page.evaluate(()=>Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],link[rel=canonical]')].map(e=>[e.getAttribute('property')||e.getAttribute('name')||'canonical',e.content||e.href])));
     assert.equal(metadata['twitter:card'],'summary');assert.equal(metadata['og:url'],catalog.find(m=>m.slug===slug).url);assert.equal(metadata.canonical,metadata['og:url']);assert.ok(metadata['og:image'].startsWith('https://'));assert.ok(metadata['twitter:image:alt']);assert.ok(Number(metadata['og:image:width'])>0&&Number(metadata['og:image:height'])>0);
@@ -108,6 +119,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     await page.locator('.skip').focus();await page.keyboard.press('Enter');await settle();assert.deepEqual(await state(),expected,slug+' skip link preserves drawing');
     const downloading=page.waitForEvent('download');await page.locator('#download').click();const download=await downloading;assert.equal(await download.failure(),null);const svg=await fs.readFile(await download.path(),'utf8');assert.match(svg,/<svg/);assert.match(svg,/<metadata>/);assert.ok(svg.includes(expected.svg.slice(0,30)),slug+' downloaded SVG');
     const pngWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const pngDownload=await pngWaiting;assert.equal(await pngDownload.failure(),null);const pngBytes=await fs.readFile(await pngDownload.path());assert.equal(pngBytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(pngBytes.length>1000);const pw=pngBytes.readUInt32BE(16),ph=pngBytes.readUInt32BE(20);assert.equal(Math.max(pw,ph),1600);assert.ok(pw*ph<=8e6);
+    const changedPixels=await verifyPixels(svg,pngBytes,slug+' changed SVG/PNG');assert.notEqual(changedPixels.pixelHash,initialPixels.pixelHash,slug+' settings change actual pixels');
     const raster=await page.evaluate(async data=>{
      const svg=document.querySelector('#art svg'),box=svg.viewBox.baseVal;
      const image=new Image();await new Promise((r,j)=>{image.onload=r;image.onerror=j;image.src='data:image/png;base64,'+data;});const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const corner=[...ctx.getImageData(0,0,1,1).data];ctx.fillStyle=svg.querySelector('rect').getAttribute('fill');ctx.fillRect(0,0,1,1);const background=[...ctx.getImageData(0,0,1,1).data];return {ratio:box.width/box.height,corner,background};
@@ -119,7 +131,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__shared.files[0].type),'image/png');
     if(slug==='probability-segments'){
      await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('キャンセル'));
-     await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('作成・共有できません'));assert.equal(await page.locator('#share-png').isDisabled(),false);
+     await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('もう一度'));assert.equal(await page.locator('#share-png').isDisabled(),false);
      await page.locator('#png-size').selectOption('2400');const highWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const high=await highWaiting;const bytes=await fs.readFile(await high.path());assert.equal(Math.max(bytes.readUInt32BE(16),bytes.readUInt32BE(20)),2400);
     }
     await page.evaluate(()=>{window.__copyFail=true;});await page.locator('#copy-link').click();assert.match(await page.locator('.share-controls>p').textContent(),/手動/);
@@ -144,9 +156,37 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
      });assert.deepEqual(layout,[],slug+' expanded layout');
      if(process.env.GALLERY_QA_DIR)await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`expanded-${slug}-${width}.png`),fullPage:true});
     }
+    if(slug==='probability-segments'&&width===375){
+     // Delay conversion completion while mock transient activation expires.
+     await page.goto(url);await page.getByRole('button',{name:'この絵を共有',exact:true}).click();
+     await page.evaluate(()=>{window.__holdPNG=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');
+     assert.equal(await page.evaluate(()=>window.__pngConversions),1);
+     await page.evaluate(()=>{window.__activation=false;window.__holdPNG=false;window.__releasePNG();});
+     await page.waitForFunction(()=>document.getElementById('status').textContent.includes('もう一度'));
+     assert.equal(await page.evaluate(()=>window.__shareCalls||0),0,'expired activation never invokes native share automatically');
+     assert.equal(await page.locator('#share-png').textContent(),'準備済みPNGを共有');
+     await page.evaluate(()=>{window.__activation=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');
+     assert.equal(await page.evaluate(()=>window.__pngConversions),1,'second click skips rasterization');assert.equal(await page.evaluate(()=>window.__shareWasActive),true);
+     await page.evaluate(()=>{window.__previousFile=window.__sharedFile;window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('キャンセル'));
+     assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),true,'cancel retains the prepared File');
+     await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('画像の共有に対応していません'));
+     await page.evaluate(()=>{window.__canShare=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),1);
+     await page.locator('#mean').fill('19');await page.locator('#mean').dispatchEvent('change');assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有');
+     await page.getByRole('button',{name:'この絵を共有',exact:true}).click();await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),2);assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),false,'settings invalidate the File');
+     await page.locator('#png-size').selectOption('2400');assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有');await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),3,'size invalidates the File');
+     // A pending export owns its click-time SVG and size, even when controls change.
+     await page.goto(url);const clickedSVG=await svgSnapshot();await page.evaluate(()=>{window.__holdPNG=true;});
+     const waiting=page.waitForEvent('download');await page.locator('#download-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');
+     await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');await page.locator('#png-size').selectOption('2400');await settle();const currentSVG=await svgSnapshot();assert.notEqual(currentSVG,clickedSVG);
+     await page.evaluate(()=>{window.__holdPNG=false;window.__releasePNG();});const pending=await waiting;const clickedBytes=await fs.readFile(await pending.path());assert.equal(Math.max(clickedBytes.readUInt32BE(16),clickedBytes.readUInt32BE(20)),1600);await verifyPixels(clickedSVG,clickedBytes,'click-time snapshot after edits');
+     assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有','old in-flight File must not enter new settings cache');
+     const currentBytes=await exportPNG();assert.equal(Math.max(currentBytes.readUInt32BE(16),currentBytes.readUInt32BE(20)),2400);await verifyPixels(currentSVG,currentBytes,'next export uses new settings');
+     console.log('PASS delayed activation/retry without conversion, cancel/fallback, invalidation, click-time snapshot');
+    }
     console.log(`PASS ${width}px ${slug}: style, boundaries, keyboard, seed, share, SVG, reset`);
    }
   }
+  console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons; settings change PNG pixels`);
   // Archived URLs also work through the actual browser controls, including inactive weights.
   for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){
    await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();

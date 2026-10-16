@@ -56,7 +56,7 @@ npm run test:browser
 
 ## PNG保存とSNS共有
 
-全作品の共通パネルからSVGとPNGを保存できます。PNGは現在の設定・配色・背景を描き、長辺1600px／2400pxから選べます。縦横比は整数ピクセルに丸める範囲で維持し、最大4096px・800万画素に制限します。変換中の重複処理を防ぎ、Canvasと一時URLを解放します。SVGの設定メタデータはPNGには埋め込みません。
+全作品の共通パネルからSVGとPNGを保存できます。PNGは現在の設定・配色・背景を描き、長辺1600px／2400pxから選べます。縦横比は整数ピクセルに丸める範囲で維持し、最大4096px・800万画素に制限します。変換中の重複処理を防ぎ、Canvasと一時URLを解放します。PNG共有は準備済みのFileを保持し、変換中に共有の操作権限が切れた場合は次の明示クリックで再変換せず共有します。設定やサイズを変えると準備済み画像を破棄します。変換待ち中の入力変更は、すでにクリックした出力には影響しません。SVGの設定メタデータはPNGには埋め込みません。
 
 「この絵を共有」で設定入りURLと共有先を表示します。リンクのコピー、対応端末の標準共有、X・LINE・Facebookへのリンク共有を使えます。端末がファイル共有に対応している場合は現在のPNGも共有できます。非対応・中断・エラー時は画面に案内し、PNG保存とリンクコピーを利用できます。共有先の画面を開くだけで、自動投稿はしません。
 
@@ -73,3 +73,5 @@ npm run test:browser
 CIとローカル回帰はID未設定で実行し、タグ有効時の検査はテスト用IDとモックだけを使います。実際のGoogleへの送信やSNS投稿はテストしません。
 
 参照: [Googleタグ](https://developers.google.com/tag-platform/gtagjs)、[Actions Variables](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)、[Open Graph](https://ogp.me/)、[LINE共有](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/)。
+
+PNGの回帰検査では、全12作品の初期設定と変更後の画像を、PNG変換処理を呼ばない独立したSVGラスタ参照と内部ピクセルで比較します。背景を保った空画像が失敗すること、描画が設定に応じて変わること、遅延した変換と操作権限切れ、準備済みFileの再利用・無効化も検査します。

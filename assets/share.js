@@ -77,14 +77,44 @@
   const title=G.title||document.querySelector('h1').textContent,slug=G.slug||location.pathname.split('/').filter(Boolean).filter(x=>x!=='index.html').at(-1);
   const track=(event,method)=>window.GalleryAnalytics?.track(event,method);
   const save=(blob,name)=>{const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);};
-  let busy=false;
-  const withPNG=async(action)=>{if(busy)return;busy=true;png.disabled=imageShare.disabled=true;status.textContent='PNGを作成しています。';try{render();await action(await pngBlob(G.svg(G.normalize(read())),Number(size.value)));}catch(e){status.textContent=e.name==='AbortError'?'共有をキャンセルしました。':'PNGを作成・共有できませんでした。SVG保存やリンクのコピーもご利用ください。';}finally{busy=false;png.disabled=imageShare.disabled=false;}};
-  png.addEventListener('click',()=>withPNG(async blob=>{save(blob,slug+'.png');status.textContent='PNGの保存を開始しました。';track('download_png','png');}));
+  let busy=false,prepared=null,revision=0;
+  const imageKey=()=>JSON.stringify(G.normalize(read()))+'|'+size.value;
+  const invalidatePNG=()=>{revision++;prepared=null;imageShare.textContent='現在のPNGを共有';};
+  const retryMessage=()=>{status.textContent=prepared?'PNGの準備ができました。もう一度「準備済みPNGを共有」を押してください。共有できない場合はPNG保存とリンクコピーをご利用ください。':'設定が変わりました。現在のPNGをもう一度準備してください。';};
+  const shareFile=async file=>{
+   if(!navigator.share||!navigator.canShare?.({files:[file]})){status.textContent='画像の共有に対応していません。PNG保存とリンクのコピーをご利用ください。';return;}
+   if(navigator.userActivation?.isActive===false){retryMessage();return;}
+   try {await navigator.share({files:[file],title});status.textContent='PNGを共有しました。';track('share_image','png');}
+   catch(e){if(e.name==='AbortError')status.textContent='共有をキャンセルしました。';else if(e.name==='NotAllowedError')retryMessage();else status.textContent='PNGを共有できませんでした。PNG保存やリンクのコピーもご利用ください。';}
+  };
+  const withPNG=async action=>{
+   if(busy)return;busy=true;png.disabled=imageShare.disabled=true;status.textContent='PNGを作成しています。';
+   // Capture before any await: edits during rasterization apply only to future exports.
+   const token=revision;let snapshot;
+   try {
+    render();snapshot={key:imageKey(),svg:G.svg(G.normalize(read())),edge:Number(size.value)};
+    let file=prepared?.key===snapshot.key?prepared.file:null;
+    if(!file)file=new File([await pngBlob(snapshot.svg,snapshot.edge)],slug+'.png',{type:'image/png'});
+    if(token===revision&&imageKey()===snapshot.key){prepared={key:snapshot.key,file};imageShare.textContent='準備済みPNGを共有';}
+    await action(file);
+   }catch{status.textContent='PNGを作成できませんでした。SVG保存やリンクのコピーもご利用ください。';}
+   finally{busy=false;png.disabled=imageShare.disabled=false;}
+  };
+  png.addEventListener('click',()=>withPNG(async file=>{save(file,slug+'.png');status.textContent='PNGの保存を開始しました。';track('download_png','png');}));
   download.addEventListener('click',()=>track('download_svg','svg'));
-  imageShare.addEventListener('click',()=>withPNG(async blob=>{const file=new File([blob],slug+'.png',{type:'image/png'});if(!navigator.share||!navigator.canShare?.({files:[file]})){status.textContent='画像の共有に対応していません。PNG保存とリンクのコピーをご利用ください。';return;}await navigator.share({files:[file],title});status.textContent='PNGを共有しました。';track('share_image','png');}));
+  imageShare.addEventListener('click',()=>{
+   if(busy)return;
+   if(prepared?.key===imageKey()){
+    // Call native share synchronously in this explicit click; no conversion/await first.
+    busy=true;png.disabled=imageShare.disabled=true;
+    shareFile(prepared.file).finally(()=>{busy=false;png.disabled=imageShare.disabled=false;});
+   }else withPNG(shareFile);
+  });
+  form.addEventListener('change',invalidatePNG);
+  form.addEventListener('input',invalidatePNG);
   actions.append(row,download,resolution,png,box,note,status);form.append(actions);
   for(const empty of form.querySelectorAll('.button-row'))if(!empty.children.length)empty.remove();
-  const clear=()=>{field.value='';label.hidden=true;options.hidden=true;for(const a of Object.values(anchors))delete a.dataset.shareUrl;message.textContent='';};
+  const clear=()=>{invalidatePNG();field.value='';label.hidden=true;options.hidden=true;for(const a of Object.values(anchors))delete a.dataset.shareUrl;message.textContent='';};
   form.addEventListener('reset',clear);form.addEventListener('input',event=>{if(event.target.name)clear();});
   document.getElementById('new-seed')?.addEventListener('click',clear);
   for(const preset of form.querySelectorAll('[data-preset]'))preset.addEventListener('click',clear);
@@ -92,6 +122,7 @@
   const restore=()=>{
    // Ordinary page anchors must never change the drawing or form.
    if(!location.hash.startsWith('#art=')) return;
+   invalidatePNG();
    try {
     const s=decode(location.hash,G);
     if(s){for(const [k,v] of Object.entries(s)) form.elements.namedItem(k).value=v;const actual=G.normalize(read());if(Object.keys(s).some(k=>actual[k]!==s[k]))throw Error('この画面で扱えない設定のため、復元できません。');render();message.textContent='共有された図形・配色を復元しました。';}
