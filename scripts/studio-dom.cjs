@@ -6,6 +6,7 @@ const path=require('node:path');
 const http=require('node:http');
 const crypto=require('node:crypto');
 const portableSVG=require('./svg-compat.cjs');
+const {inspectControls,legacy}=require('./control-contract.cjs');
 (async()=>{
  const root=path.resolve('dist'),catalog=JSON.parse(await fs.readFile(path.join(root,'catalog.json')));
  const prefix='/generative-art-gallery/';
@@ -35,6 +36,40 @@ const portableSVG=require('./svg-compat.cjs');
     const url=base+'works/'+slug+'/';
     for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
     const initial=await state();
+    const contract=legacy[slug]?{schema:false,fields:legacy[slug]}:await page.evaluate(()=>{
+     const G=window.StudyGenerator;if(!G||!window.StudyControls)throw Error('Missing schema generator or definitions');
+     const fields={};
+     for(const key of new Set([...Object.keys(G.defaults),...Object.keys(G.schema)])){
+      const rule=G.schema[key],ui=StudyControls.definition(G,key);
+      fields[key]=key==='seed'?{type:'text'}:rule.options?{type:'select',options:Object.keys(rule.options)}:{type:ui.control,min:rule.min,max:rule.max,step:rule.step,output:true};
+      fields[key].label=ui.label;fields[key].help=ui.help;
+     }
+     return {schema:true,fields};
+    });
+    assert.ok(Object.keys(contract.fields).length,slug+' nonempty expected contract');
+    const generatorKeys=await page.evaluate(()=>Object.keys((window.StudyGenerator||window.ArtGenerator||window.TruchetGenerator||window.LissajousGenerator).defaults).sort());
+    assert.deepEqual(Object.keys(contract.fields).sort(),generatorKeys,slug+' contract covers every generator key');
+    assert.deepEqual(await page.evaluate(inspectControls,contract),[],slug+' complete control contract');
+    // Mutation checks prove the browser audit fails on absent panels/fields,
+    // incorrect widget types, limits, steps, labels, explanations and outputs.
+    const mutationFailures=await page.evaluate(({source,contract})=>{
+     const inspect=(0,eval)('('+source+')'),form=document.getElementById('settings'),backup=form.cloneNode(true),failures=[];
+     const probe=(name,mutate)=>{const copy=backup.cloneNode(true);form.replaceWith(copy);mutate(copy);if(!inspect(contract).length)failures.push(name);copy.replaceWith(form);};
+     probe('zero controls',f=>f.replaceChildren());
+     if(contract.schema)probe('zero schema wrappers',f=>f.querySelectorAll('[data-control]').forEach(e=>e.removeAttribute('data-control')));
+     for(const [key,rule] of Object.entries(contract.fields)){
+      const get=f=>[...f.querySelectorAll('[name]')].find(e=>e.name===key);
+      probe(key+' missing',f=>get(f).remove());
+      probe(key+' type',f=>{const input=get(f);if(input.tagName==='INPUT')input.type=input.type==='text'?'number':'text';else{const replacement=document.createElement('textarea');for(const a of input.attributes)replacement.setAttribute(a.name,a.value);input.replaceWith(replacement);}});
+      probe(key+' label',f=>{for(const l of [...get(f).labels])l.replaceWith(...l.childNodes);});
+      probe(key+' help',f=>get(f).removeAttribute('aria-describedby'));
+      if(rule.min!==undefined)for(const attr of ['min','max','step'])probe(key+' '+attr,f=>get(f).setAttribute(attr,'99999'));
+      if(rule.output){probe(key+' output',f=>f.querySelector('#'+key+'-value').remove());probe(key+' stale output',f=>f.querySelector('#'+key+'-value').textContent='99999');}
+     }
+     return failures;
+    },{source:inspectControls.toString(),contract});
+    assert.deepEqual(mutationFailures,[],slug+' rejects malformed controls');
+
     const metrics=await page.evaluate(()=>{
      const d=document.getElementById('download'),share=document.querySelector('.share-button'),a=document.getElementById('actions'),reset=a.querySelector('button[type=reset]'),box=d.getBoundingClientRect(),style=getComputedStyle(d);
      return {overflow:document.documentElement.scrollWidth>innerWidth,bg:style.backgroundColor,color:style.color,width:box.width,available:a.getBoundingClientRect().width,height:box.height,gap:box.top-reset.getBoundingClientRect().bottom,shareWidth:share.getBoundingClientRect().width};
@@ -44,10 +79,6 @@ const portableSVG=require('./svg-compat.cjs');
     const range=page.locator('input[type=range]:visible').first();const before=await range.inputValue();await range.focus();await page.keyboard.press('End');await settle();const max=await range.getAttribute('max');assert.equal(await range.inputValue(),max);assert.notEqual(await range.inputValue(),before);const key=await range.getAttribute('name');const output=page.locator('#'+key+'-value');assert.equal(parseFloat(await output.textContent()),slug==='truchet-tiles'?57:Number(max),slug+' output follows keyboard');await page.keyboard.press('Home');await settle();assert.equal(parseFloat(await output.textContent()),Number(await range.getAttribute('min')));
     const number=page.locator('input[type=number]').first();if(await number.count()){
      const min=await number.getAttribute('min'),max=await number.getAttribute('max');await number.fill(String(Number(max)+100));await number.press('Tab');await settle();assert.equal(await number.inputValue(),max,slug+' upper clamp');await number.fill(String(Number(min)-100));await number.press('Tab');await settle();assert.equal(await number.inputValue(),min,slug+' lower clamp');await number.fill('');await number.press('Tab');await settle();assert.notEqual(await number.inputValue(),'',slug+' empty fallback');
-    }
-    if(await page.locator('[data-control]').count()){
-     for(const summary of await page.locator('.control-details summary:visible').all())await summary.click();
-     assert.deepEqual(await page.locator('[data-control]').evaluateAll(fields=>fields.flatMap(f=>{const i=f.querySelector('input,select'),label=f.querySelector('label'),help=document.getElementById(i.getAttribute('aria-describedby'));return label?.htmlFor===i.id&&help?.textContent.trim()&&(!f.hidden||i.disabled)?[]:[i.name]})),[],slug+' labels/help/active contract');
     }
     if(slug==='hex-transitions'){
      await page.locator('#states').fill('2');await page.locator('#states').dispatchEvent('change');await settle();assert.equal(await page.locator('input[name^=w]:enabled').count(),4);assert.equal(await page.locator('input[name^=w]:disabled').count(),12);
@@ -68,6 +99,20 @@ const portableSVG=require('./svg-compat.cjs');
     await page.getByRole('button',{name:'この絵を共有',exact:true}).click();await page.getByRole('button',{name:'リセット',exact:true}).click();await settle();assert.deepEqual(await state(),initial,slug+' resets all settings');assert.equal(await page.locator('textarea').inputValue(),'');assert.equal(await page.locator('.share-controls>label').isVisible(),false,slug+' hides stale share URL');
     await page.goto(url+'#art=%7B');await settle();assert.deepEqual(await state(),initial);assert.match(await page.locator('.share-controls>p').textContent(),/初期設定/);
     if(process.env.GALLERY_QA_DIR&&['recursive-regions','hex-transitions','probability-segments'].includes(slug)){await page.goto(url);await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`after-${slug}-${width}.png`),fullPage:true});}
+    if(['hex-transitions','probability-segments'].includes(slug)){
+     await page.goto(url);const count=page.locator(slug==='hex-transitions'?'#states':'#directions');await count.fill(await count.getAttribute('max'));await count.dispatchEvent('change');await settle();for(const summary of await page.locator('.control-details summary:visible').all())await summary.click();
+     assert.deepEqual(await page.evaluate(inspectControls,contract),[]);
+     const layout=await page.evaluate(()=>{
+      const issues=[],visible=[...document.querySelectorAll('.controls .field')].filter(e=>e.getClientRects().length);
+      if(document.documentElement.scrollWidth>innerWidth)issues.push('page overflow');
+      const panel=document.querySelector('.controls').getBoundingClientRect();
+      for(const field of visible){const r=field.getBoundingClientRect();if(r.left<panel.left-1||r.right>panel.right+1)issues.push('field overflow');const input=field.querySelector('input,select'),label=field.querySelector('label');if(input&&label&&input.getBoundingClientRect().top<label.getBoundingClientRect().bottom-1)issues.push('label/input overlap');}
+      for(let i=0;i<visible.length;i++)for(let j=i+1;j<visible.length;j++){const a=visible[i].getBoundingClientRect(),b=visible[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)issues.push('fields overlap');}
+      for(const group of document.querySelectorAll('.control-details[open]')){const fields=[...group.querySelectorAll('.field')].filter(e=>e.getClientRects().length);for(let i=1;i<fields.length;i++)if(fields[i].getBoundingClientRect().top-fields[i-1].getBoundingClientRect().bottom<12)issues.push('insufficient field gap');}
+      return issues;
+     });assert.deepEqual(layout,[],slug+' expanded layout');
+     if(process.env.GALLERY_QA_DIR)await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`expanded-${slug}-${width}.png`),fullPage:true});
+    }
     console.log(`PASS ${width}px ${slug}: style, boundaries, keyboard, seed, share, SVG, reset`);
    }
   }

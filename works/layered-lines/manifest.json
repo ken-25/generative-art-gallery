@@ -1,7 +1,7 @@
 {
   "slug": "layered-lines",
   "title": "角度の重なり",
-  "description": "不等な三つの領域に、角度の異なる線群を重ねる。",
+  "description": "三つの領域に、角度の異なる線群を重ねる。",
   "addedAt": "2026-10-16T11:15:00Z",
   "tags": [
     "mathematics",

@@ -38,7 +38,7 @@ npx playwright install chromium
 npm run test:browser
 ```
 
-システムのChromiumを使う場合は `CHROMIUM_PATH=/usr/bin/chromium npm run test:browser` とします。ブラウザ検証は一時サーバーを起動し、公開時と同じ `/generative-art-gallery/` サブパスで実行します。1440pxと375pxで、入力・値表示・キーボード・ボタンの計算済みスタイル・共有・SVGダウンロード・リセットを確認します。画像を保存する場合は `GALLERY_QA_DIR` に保存先を指定します。
+システムのChromiumを使う場合は `CHROMIUM_PATH=/usr/bin/chromium npm run test:browser` とします。ブラウザ検証は一時サーバーを起動し、公開時と同じ `/generative-art-gallery/` サブパスで実行します。共通schemaの全キーを期待値にし、要素が0件でも欠落があっても失敗します。初期3作品は明示的なlegacy contractで検査します。ブラウザ内で型・境界・step・ラベル・説明・出力の欠損や誤りを作る検査も行い、見逃さないことを確認します。1440pxと375pxで、入力・値表示・キーボード・ボタンの計算済みスタイル・共有・SVGダウンロード・リセットを確認します。画像を保存する場合は `GALLERY_QA_DIR` に保存先を指定します。
 
 生成器v1の既定値・正規化・乱数・SVGの幾何と配色は互換性を維持します。`scripts/fixtures/all-works-v1.json` は全作品の既定値と上下限の共有URL、SVGのSHA-256を保持します。Node.jsではSVG全体のバイト列を厳密比較し、ブラウザ間の数学関数の丸め差については座標属性だけを小数点以下9桁で比較します。色・構造・メタデータはそのまま比較します。新作品のfixtureは追加し、既存の期待値をUI修正に合わせて更新しないでください。将来生成規則を変えるときは旧実装を残し、明示的にバージョンを分けます。
 
