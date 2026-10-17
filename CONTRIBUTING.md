@@ -14,6 +14,8 @@
 
 manifestの必須項目はslug、title、description、UTCのaddedAt、tags、preview、sources（label/url）です。作品登録用の一覧を別途編集する必要はありません。
 
+`addedAt` は初回公開日時です。作品一覧は `addedAt` の新しい順（同日時はslugの昇順）に並び、20件ごとに `page/2/` などの静的ページへ分かれます。作品番号は `addedAt` の古い順の通し番号で、表示順やページ位置とは別に固定されます。説明の修正などで `addedAt` を更新しないでください。一覧ページ・作品ページ・catalog・sitemapはビルドが同じmanifestから生成し、`dist/` はコミットしません。
+
 ## 受入チェック
 
 `npm ci` → `npm test` → `npm run build` → `npx playwright install chromium` → `npm run test:browser` を実行します。PRのVerify static siteでも同じ確認を行います。

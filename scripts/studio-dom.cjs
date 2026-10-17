@@ -10,6 +10,9 @@ const comparePNG=require('./png-reference.cjs');
 const {inspectControls,legacy}=require('./control-contract.cjs');
 (async()=>{
  const root=path.resolve('dist'),catalog=JSON.parse(await fs.readFile(path.join(root,'catalog.json')));
+ // List pages are newest first, 20 per page; artwork numbers stay chronological.
+ const ordered=[...catalog].sort((a,b)=>b.addedAt.localeCompare(a.addedAt)||a.slug.localeCompare(b.slug));
+ const listPages=Array.from({length:Math.max(1,Math.ceil(ordered.length/20))},(_,i)=>ordered.slice(i*20,i*20+20)),listRoutes=listPages.map((_,i)=>i?`page/${i+1}/`:'');
  const prefix='/generative-art-gallery/';
  const server=http.createServer(async(req,res)=>{
   try{
@@ -141,7 +144,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   const linksPage=await linksContext.newPage();
   try{
    let checked=0;
-   for(const route of ['', 'about/', ...catalog.map(m=>'works/'+m.slug+'/')]){
+   for(const route of [...listRoutes, 'about/', ...catalog.map(m=>'works/'+m.slug+'/')]){
     await linksPage.goto(base+route);
     const rows=await linksPage.locator('a[href]').evaluateAll(as=>{const canonical=document.querySelector('link[rel=canonical]').href,site=new URL('/generative-art-gallery/','https://ken-25.github.io');return as.map(a=>{const u=new URL(a.getAttribute('href'),canonical);return {external:!a.hasAttribute('download')&&['http:','https:'].includes(u.protocol)&&(u.origin!==site.origin||!(u.pathname===site.pathname.slice(0,-1)||u.pathname.startsWith(site.pathname))),target:a.getAttribute('target'),rel:a.rel.split(/\s+/),note:a.querySelector('.external-link-note')?.textContent,title:a.title};});});
     for(const a of rows){if(a.external){assert.equal(a.target,'_blank');assert.ok(a.rel.includes('noopener')&&a.rel.includes('noreferrer'));assert.equal(a.note,'（新しいタブ）');assert.match(a.title,/新しいタブ/);checked++;}else{assert.equal(a.target,null);assert.equal(a.note,undefined);}}
@@ -152,12 +155,26 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   }finally{await linksContext.close();}
   // Static unclassified list stays usable without page JavaScript.
   const home=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:667}});
-  try{await home.goto(base);assert.equal(await home.locator('.theme-nav,.theme-section').count(),0);assert.equal(await home.locator('a.work-card').count(),catalog.length);for(const [index,m]of catalog.entries()){const card=home.locator('a.work-card').nth(index);assert.equal(await card.getAttribute('href'),`works/${m.slug}/`);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));await card.locator('img').scrollIntoViewIfNeeded();await card.locator('img').evaluate(i=>i.decode());}assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}finally{await home.close();}
+  try{
+   await home.goto(base);
+   for(const [index,items]of listPages.entries()){
+    const route=listRoutes[index];if(index){assert.equal((await home.goto(base+route)).status(),200);assert.equal((await home.reload()).status(),200);}
+    assert.equal(home.url(),base+route);assert.equal(await home.locator('.theme-nav,.theme-section').count(),0);assert.equal(await home.locator('a.work-card').count(),items.length);
+    assert.equal(await home.locator('link[rel=canonical]').getAttribute('href'),new URL(route,'https://ken-25.github.io/generative-art-gallery/').href);assert.equal(await home.evaluate(()=>getComputedStyle(document.querySelector('.work-card')).display),'grid','stylesheet on '+route);
+    for(const [i,m]of items.entries()){const card=home.locator('a.work-card').nth(i);assert.equal(new URL(await card.getAttribute('href'),home.url()).href,base+`works/${m.slug}/`);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));assert.equal(await card.locator('img').getAttribute('loading'),i?'lazy':null);await card.locator('img').scrollIntoViewIfNeeded();await card.locator('img').evaluate(i=>i.decode());}
+    for(const link of ['.brand','header a[href$="about/"]']){const href=await home.locator(link).first().getAttribute('href');assert.equal((await home.request.get(new URL(href,home.url()).href)).status(),200,route+' '+link);}
+    const nav=home.locator('nav.pagination');assert.equal(await nav.count(),listPages.length>1?1:0);
+    if(listPages.length>1){assert.equal(await nav.locator('[aria-current=page]').textContent(),String(index+1));assert.equal(await nav.locator('[rel=prev]').count(),index?1:0);assert.equal(await nav.locator('[rel=next]').count(),index<listPages.length-1?1:0);for(const a of await nav.locator('a').all())assert.ok(listRoutes.map(r=>base+r).includes(new URL(await a.getAttribute('href'),home.url()).href));}
+    assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    if(index<listPages.length-1){await nav.locator('[rel=next]').focus();await home.keyboard.press('Enter');await home.waitForURL(base+listRoutes[index+1]);await home.goBack();}
+   }
+   assert.deepEqual(listPages.flat().map(m=>m.slug).sort(),catalog.map(m=>m.slug).sort());
+  }finally{await home.close();}
   for(const [width,height]of [[320,568],[375,667],[667,375],[844,390]]){
    await page.setViewportSize({width,height});for(const {slug}of catalog){await page.goto(base+'works/'+slug+'/');for(const selector of ['#settings input[type=range]','#settings input[type=text]','#save-open']){const control=page.locator(selector).first();if(!await control.count())continue;await control.focus();await settle();const r=await control.evaluate(e=>{const p=document.querySelector('.paper-area').getBoundingClientRect(),f=e.getBoundingClientRect();return {p:p.toJSON(),f:f.toJSON(),h:visualViewport.height,overflow:document.documentElement.scrollWidth>innerWidth,nested:[document.querySelector('.studio'),document.querySelector('.controls')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1)};});assert.equal(r.overflow,false);assert.equal(r.nested,false);assert.ok(r.p.height<=r.h*.4+1);assert.ok(r.f.top>=r.p.bottom+8&&r.f.bottom<=r.h-8);}}
   }
   for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();const svg=(await exportFile('svg')).toString().replace(/^<\?xml[^>]*>\s*/,'');assert.equal(crypto.createHash('sha256').update(portableSVG(svg)).digest('hex'),f.svgPortableSha256,f.slug+' archived SVG');}
   await page.goto(base+'about/#terms');assert.equal(await page.locator('#measurement').count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/集計しています|明示的に有効化/);assert.equal(await page.locator('a').evaluateAll(as=>as.some(a=>!a.getAttribute('href')?.startsWith('http')&&/\.md(?:#|$)/.test(a.getAttribute('href')||''))),false);assert.deepEqual(errors,[]);
-  console.log(`PASS flat no-JS list/${catalog.length} previews, 4 mobile sizes, ${JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json')).length} archived SVGs, reader copy and analytics-off notice; zero JS/network errors`);
+  console.log(`PASS flat no-JS list/${catalog.length} previews on ${listPages.length} page(s), 4 mobile sizes, ${JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json')).length} archived SVGs, reader copy and analytics-off notice; zero JS/network errors`);
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});
