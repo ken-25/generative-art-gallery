@@ -4,7 +4,7 @@ import {readFile,readdir} from 'node:fs/promises';
 import vm from 'node:vm';
 import {createHash} from 'node:crypto';
 const fixtures=JSON.parse(await readFile(new URL('./fixtures/all-works-v1.json',import.meta.url),'utf8'));
-test('all twelve generator-v1 defaults and boundary share URLs retain exact SVG bytes',async()=>{
+test('all generator-v1 defaults and boundary share URLs retain exact SVG bytes',async()=>{
  const slugs=(await readdir('works')).sort();
  assert.deepEqual([...new Set(fixtures.map(f=>f.slug))].sort(),slugs);
  for(const f of fixtures){

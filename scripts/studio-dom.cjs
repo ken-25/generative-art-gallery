@@ -142,6 +142,6 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   }
   for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();const svg=(await exportFile('svg')).toString().replace(/^<\?xml[^>]*>\s*/,'');assert.equal(crypto.createHash('sha256').update(portableSVG(svg)).digest('hex'),f.svgPortableSha256,f.slug+' archived SVG');}
   await page.goto(base+'about/#terms');assert.equal(await page.locator('#measurement').count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/集計しています|明示的に有効化/);assert.equal(await page.locator('a').evaluateAll(as=>as.some(a=>!a.getAttribute('href')?.startsWith('http')&&/\.md(?:#|$)/.test(a.getAttribute('href')||''))),false);assert.deepEqual(errors,[]);
-  console.log('PASS flat no-JS list/12 previews, 4 mobile sizes, 36 archived SVGs, reader copy and analytics-off notice; zero JS/network errors');
+  console.log(`PASS flat no-JS list/${catalog.length} previews, 4 mobile sizes, ${JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json')).length} archived SVGs, reader copy and analytics-off notice; zero JS/network errors`);
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});
