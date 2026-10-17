@@ -1,24 +1,22 @@
-# 資料と実装の由来
+# ライセンス・クレジット
 
-2026-10-16の復元時点の記録です。復元前の制作記録とHTML/CSS/JS、画像、説明を対象にしています。サイトの配信物には、外部パッケージ、フォント、原図スキャン、写真を同梱していません。プレビューWebPは本サイトの生成器から作成しています。外部参考資料はリンクで案内し、資料自体をMITに変更しません。コード作成には生成AIが使われています。履歴と照合だけで全コードの完全な独自性や権利状態を保証するものではありません。
+本プロジェクトの自作コードと自作の説明文には[MITライセンス](LICENSE)を適用します。第三者の資料・素材は、それぞれのライセンスに従います。
 
-## 乱数実装
+プレビューWebPは本サイトの生成器から作成しています。サイトの配信物には、外部パッケージ、フォント、原図スキャン、写真を同梱していません。
 
-`works/order-and-chance/generator.js` と `works/truchet-tiles/truchet-generator.js` のrandom関数は、シード文字列にFNV-1a型の32ビット演算を行い、Mulberry32と同じ演算系列を使用します。「独自乱数アルゴリズム」という説明は適切ではありません。元の作成時に参照したページの履歴は残っていないため、直接のコピー元は確定できません。
+## 乱数の仕様と参考資料
 
-照合したJavaScript実装: [bryc/code, PRNGs.md — Mulberry32](https://github.com/bryc/code/blob/master/jshash/PRNGs.md#mulberry32)。2026-10-16取得時のファイル冒頭には `License: Public domain.` と明記されています。原型の作者としてTommy Ettinger、JavaScriptの公開例としてbrycを記録します。本プロジェクトのMITは第三者由来の部分に新たな独占権や表示義務を主張しません。公有の扱いは法域により異なり得ます。
+`works/order-and-chance/generator.js` と `works/truchet-tiles/truchet-generator.js` のrandom関数は、シード文字列にFNV-1a型の32ビット演算を行い、Mulberry32と同じ演算系列を使用します。
 
-FNVアルゴリズムの資料: https://www.isthe.com/chongo/tech/comp/fnv/ 。本実装はUTF-16のcharCodeAtではなくcodePointAtを使うため、一般的なFNV実装と同一の文字列ハッシュとは主張しません。
+Mulberry32の原型はTommy Ettinger、JavaScriptの公開例はbrycによるものです。[bryc/code, PRNGs.md — Mulberry32](https://github.com/bryc/code/blob/master/jshash/PRNGs.md#mulberry32)のライセンス表示は `License: Public domain.` です。
+
+FNVアルゴリズムの資料: https://www.isthe.com/chongo/tech/comp/fnv/ 。本実装の文字列処理にはcodePointAtを使います。
 
 `assets/study-core.js` を使う9作品は、文字列を31倍の漸化式で数値化し、線形合同法（LCG）で疑似乱数を生成します。「密度の丘」と「角度の重なり」はその共通部品を読み込みますが、描画に乱数を使いません。Lissajous曲線も乱数を使いません。
 
-## 数学・作品の参照
+## 作品の参考資料
 
-各作品のmanifest.sourcesとページ本文に資料を記録しています。TruchetとLissajousのGallica原資料は所在確認のみで、原図は未実見です。Nees《Schotter》への着想を含め、参照作品・資料・第三者の具体的表現は本プロジェクトのMIT許諾対象ではありません。図形・式の独自実装と、特定の作品の表現の複製を区別します。
-
-## 適用範囲
-
-LICENSEは本プロジェクトが許諾できるコードと自作説明文に適用します。第三者由来の部分は上記または個別の表示を維持します。新たな素材を取り込む場合は由来と利用条件を別記してください。不明な素材を許諾済みとして取り込まないでください。
+各作品の参考資料はmanifest.sourcesと作品ページに掲載しています。参照作品・資料は本プロジェクトのMIT許諾対象ではありません。
 
 ## 開発時の検証ツール
 

@@ -23,7 +23,7 @@ body:
     id: share_url
     attributes:
       label: 設定入りURL
-      description: 設定の提案は「この絵を共有」でコピーしたURLを貼ってください。配色だけの提案では省略できます。
+      description: 設定の提案は「共有」→「リンクをコピー」でコピーしたURLを貼ってください。配色だけの提案では省略できます。
   - type: textarea
     id: highlight
     attributes:

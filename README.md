@@ -52,7 +52,7 @@ npm run test:browser
 
 ## 利用条件・資料
 
-[共通の利用条件](about/index.html#terms)、[MITライセンス](LICENSE)、[資料と実装の由来](THIRD_PARTY_NOTICES.md)を参照してください。作品ページは操作と出典を中心にし、資料の確認状況や作品固有の制作記録は詳細側にまとめています。
+[共通の利用条件](about/index.html#terms)、[MITライセンス](LICENSE)、[ライセンス・クレジット](THIRD_PARTY_NOTICES.md)を参照してください。作品の数理や設定の仕様は、各作品フォルダの `DESIGN.md` にまとめています。
 
 ## PNG保存とSNS共有
 
@@ -64,9 +64,9 @@ npm run test:browser
 
 ## 任意のGoogleタグ
 
-計測は既定で無効です。仮の推奨変数名は `GOOGLE_TAG_ID` と `GOOGLE_TAG_ENABLED` です。リポジトリまたは既存の `github-pages` Environmentの **Actions Variables** からPagesのbuild jobへ渡します。buildにも既存Environmentを指定しており、Environmentの保護ルールがある場合はbuildにも適用されます。変数・Secrets・権限の作成や変更を行うコードはありません。
+計測は既定で無効です。使用する変数は `GOOGLE_TAG_ID` と `GOOGLE_TAG_ENABLED` です。リポジトリまたは既存の `github-pages` Environmentの **Actions Variables** からPagesのbuild jobへ渡します。buildにも既存Environmentを指定しており、Environmentの保護ルールがある場合はbuildにも適用されます。
 
-`GOOGLE_TAG_ID`だけを指定しても有効になりません。`GOOGLE_TAG_ENABLED` が文字列 `true` と完全一致する場合に限り有効化します。未設定・空欄・`false`・`TRUE`・`1`などは無効で、IDが存在してもHTMLの計測タグと配信物の計測ファイルを除外します。ゲート無効時はIDの内容も使用しないため、PNG・共有だけを先行公開できます。有効化時のIDは `G-`／`GT-` と英大文字・数字の形式を検証し、不正または未設定なら値を表示せずビルドを失敗させます。タグIDはビルド後のHTMLに含まれる公開情報であり、秘密値を指定しないでください。変数名・IDの確認と設定はオーナーが行い、変更後は再ビルドします。
+`GOOGLE_TAG_ID`だけを指定しても有効になりません。`GOOGLE_TAG_ENABLED` が文字列 `true` と完全一致する場合に限り有効化します。未設定・空欄・`false`・`TRUE`・`1`などは無効で、IDが存在してもHTMLの計測タグと配信物の計測ファイルを除外します。ゲート無効時はIDの内容も使用しません。有効化時のIDは `G-`／`GT-` と英大文字・数字の形式を検証し、不正または未設定なら値を表示せずビルドを失敗させます。タグIDはビルド後のHTMLに含まれる公開情報であり、秘密値を指定しないでください。変数名・IDの確認と設定はオーナーが行い、変更後は再ビルドします。
 
 計測するのは固定URLのページ閲覧と保存・共有の操作種別です。コードはURLのquery／fragment、調整値、seed、コピーしたURL、入力内容をイベントに渡さず、canonicalをpage_locationに指定し、referrerも空にします。広告パーソナライズ／Google signalsは無効にします。フォームの送信先からquery／fragmentを除き、SNS導線は設定入りhrefを持つリンクではなくボタンにし、保存名も固定して自動計測の対象へ設定を載せないようにしています。Google管理画面側の拡張計測・カスタムタグの設定はこのコードから確認・変更できないため、拡張計測の無効化が未確認の間はゲートをオフのままにします。有効化前に拡張計測（とくに外部リンク・フォーム・履歴変更など）を無効にし、設定入りURLを自動収集しないことをオーナーが確認してください。
 
