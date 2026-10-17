@@ -18,23 +18,26 @@
   if(container===form)form.insertBefore(div,actions);else container.append(div);
   fields.set(key,{input,output,div,definition});
  }
- let current=G.defaults,frame,job,jobKey;
+ let current=G.defaults,frame,job,jobKey,waiting=[];
  const caption=document.createElement('p');caption.id='art-note';caption.className='art-note';caption.setAttribute('role','status');if(G.note)form.before(caption);
- const show=s=>{art.innerHTML=G.svg(s);art.removeAttribute('aria-busy');if(G.note)caption.textContent=G.note(s);};
+ const show=s=>{art.innerHTML=G.svg(s);art.removeAttribute('aria-busy');if(G.note)caption.textContent=G.note(s);for(const resolve of waiting.splice(0))resolve();};
+ // Resolves once the latest settings are drawn, so exports never compute a whole result synchronously.
+ const drawn=()=>new Promise(resolve=>waiting.push(resolve));
  // Heavy studies compute in short chunks between frames; a newer setting cancels the old job so it never overwrites the view.
  function compute(s){
-  const key=JSON.stringify(s);if(job&&jobKey===key)return;
+  const key=JSON.stringify(s);if(job&&jobKey===key)return drawn();
   job?.cancel();job=G.task?.(s);jobKey=key;if(!job){show(s);return;}
   const mine=job;art.setAttribute('aria-busy','true');if(G.note)caption.textContent='計算中…';
   const run=()=>{if(job!==mine)return;const end=performance.now()+12;let done=false;while(!done&&performance.now()<end)done=mine.step();if(job!==mine)return;if(done){job=null;show(s);}else setTimeout(run,0);};
-  run();
+  const result=drawn();run();return result;
  }
  const read=()=>Object.fromEntries([...fields].map(([k,{input}])=>[k,input.value]));
  const sync=()=>{for(const [k,{input}]of fields)input.value=current[k];};
  function render(){
-  current=G.normalize(read());compute(current);
+  current=G.normalize(read());const pending=compute(current);
   for(const [key,{input,output,div,definition}]of fields){if(output)output.value=current[key]+definition.unit;const active=!definition.active||definition.active(current);div.hidden=!active;input.disabled=!active;}
   for(const group of groups.values())group.parentElement.hidden=![...group.querySelectorAll('.field')].some(f=>!f.hidden);
+  return pending;
  }
  form.addEventListener('submit',e=>e.preventDefault());
  form.addEventListener('input',()=>{cancelAnimationFrame(frame);frame=requestAnimationFrame(render);status.textContent='';});

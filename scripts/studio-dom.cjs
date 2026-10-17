@@ -98,6 +98,28 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     console.log(`PASS ${width}px ${slug}: complete controls, seed/reset, modal SVG/code/PNG, pixel references, v1, clipboard/native fallbacks`);
    }
   }
+  // Saving, copying or making a PNG while a heavy study is still computing waits for the chunked job
+  // instead of recomputing synchronously, so the page never blocks for the whole simulation.
+  {
+   await page.setViewportSize({width:1440,height:1000});await page.goto(base+'works/reaction-diffusion/');await settle();
+   await page.evaluate(()=>{window.__longest=0;new PerformanceObserver(list=>{for(const e of list.getEntries())window.__longest=Math.max(window.__longest,e.duration);}).observe({type:'longtask',buffered:false});});
+   const heavy=async iterations=>{await closeDialog();await page.locator('#iterations').evaluate((e,v)=>{e.value=String(v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));},iterations);await page.waitForFunction(()=>document.querySelector('#art[aria-busy=true]'));};
+   const metadata=svg=>JSON.parse(svg.match(/<metadata>(.*?)<\/metadata>/)[1].replace(/&quot;/g,'"'));
+   const shape=svg=>svg.match(/ d="([^"]*)"/)[1];let downloads=0;const count=()=>downloads++;page.on('download',count);
+   // Closing the dialog while the save waits cancels it; the page stays responsive and nothing is saved.
+   await heavy(4000);await format('svg');await page.locator('#download-file').click();
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true','save requested mid-computation');assert.match(await page.locator('#dialog-status').textContent(),/計算を待っています/);
+   await page.locator('#dialog-close').click();await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true','dialog closes while computing');await settle();assert.equal(downloads,0);page.off('download',count);
+   await heavy(3900);await format('svg');const waiting=page.waitForEvent('download');await page.locator('#download-file').click();const saved=(await fs.readFile(await (await waiting).path())).toString();
+   assert.equal(metadata(saved).iterations,3900);assert.equal(shape(saved),shape(await svgSnapshot()));
+   await heavy(3800);await format('svg');await page.locator('#copy-svg').click();await page.waitForFunction(()=>window.__copied?.includes('&quot;iterations&quot;:3800'));
+   assert.equal(shape(await page.evaluate(()=>window.__copied)),shape(await svgSnapshot()));
+   await heavy(3700);const png=await exportFile();assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');await verifyPixels(await svgSnapshot(),png,'PNG requested mid-computation');
+   assert.equal(metadata(await svgSnapshot()).iterations,3700);
+   const longest=await page.evaluate(()=>window.__longest);assert.ok(longest<400,'longest main-thread task '+longest+'ms');
+   console.log(`PASS save/copy/PNG during chunked computation wait for the job; longest task ${Math.round(longest)}ms`);
+  }
   console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons`);
   // Dialog lifecycle at desktop, short portrait, and landscape sizes.
   for(const [width,height]of [[1440,1000],[320,568],[375,667],[667,375]]){

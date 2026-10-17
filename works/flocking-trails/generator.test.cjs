@@ -12,7 +12,18 @@ test('every boid updates from the previous state at the same time',()=>{
   }
  }else assert.fail('fixture pair should start as neighbours');
 });
-test('single boid, coincident boids, no neighbours and zero weights stay finite',()=>{
+test('coincident boids with different velocities stay finite and separate',()=>{
+ const s={...G.defaults,separation:3,alignment:1,cohesion:1,radius:50};
+ let boids=[{x:100,y:100,vx:1,vy:0},{x:100,y:100,vx:0,vy:2},{x:100,y:100,vx:-1.5,vy:-1.5}];
+ const first=G.step(boids,s);for(const b of first)assert(Object.values(b).every(Number.isFinite));
+ // At one point there is no direction to separate along, so only alignment and cohesion act on the first step.
+ for(let t=0;t<200;t++)boids=G.step(boids,s);for(const b of boids)assert(Object.values(b).every(Number.isFinite));
+ assert(new Set(boids.map(b=>b.x+','+b.y)).size===3,'they move apart');
+ // Simultaneous update: permuting the boids permutes the result and nothing else.
+ const sample=G.geometry({...G.defaults,count:30,steps:1}).initial,order=sample.map((_,i)=>(i*7)%30),forward=G.step(sample,s);
+ assert.deepEqual(G.step(order.map(i=>sample[i]),s),order.map(i=>forward[i]));
+});
+test('a single boid, no neighbours and zero weights stay finite',()=>{
  const one=G.geometry({...G.defaults,count:1,steps:100});assert.equal(one.trails.length,1);
  // A lone boid has no neighbours, so it keeps its initial velocity.
  const [p0,p1,p2]=one.trails[0];assert(Math.abs((p2[0]-p1[0])-(p1[0]-p0[0]))<1e-9||Math.abs(p2[0]-p1[0])>400);

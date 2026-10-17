@@ -5,12 +5,13 @@
  const ruleOf=s=>s.preset==='custom'?s.rule:Number(s.preset);
  // Bit 4l+2c+r of the rule number gives the next state of a cell whose left, centre and right neighbours are l, c, r.
  const next=(rule,l,c,r)=>(rule>>(4*l+2*c+r))&1;
+ // One generation with a periodic boundary: the first and last columns are neighbours.
+ const advance=(row,rule)=>{const n=row.length,r=new Uint8Array(n);for(let i=0;i<n;i++)r[i]=next(rule,row[(i+n-1)%n],row[i],row[(i+1)%n]);return r;};
  function geometry(s){
   const rule=ruleOf(s),n=s.columns,rng=C.rng(s.seed);
   let row=new Uint8Array(n);if(s.init==='single')row[n>>1]=1;else for(let i=0;i<n;i++)row[i]=rng()<s.density?1:0;
   const rows=[row];
-  // Periodic boundary: the first and last columns are neighbours.
-  for(let t=1;t<s.generations;t++){const r=new Uint8Array(n);for(let i=0;i<n;i++)r[i]=next(rule,row[(i+n-1)%n],row[i],row[(i+1)%n]);rows.push(row=r);}
+  for(let t=1;t<s.generations;t++)rows.push(row=advance(row,rule));
   return {rule,rows};
  }
  function draw(g,s,p){
@@ -21,5 +22,5 @@
   return `<g transform="translate(${Math.round(x*1e3)/1e3} ${Math.round(y*1e3)/1e3}) scale(${k})" shape-rendering="crispEdges"><rect width="${n}" height="${s.generations}" fill="${C.mix(p[0],p[1],0.06)}"/>${runs.map((r,i)=>r.length?`<path d="${r.join('')}" fill="${p[1+i]}"/>`:'').join('')}</g>`;
  }
  const G=C.create({slug:'elementary-automata',title:'三つの隣から',defaults,schema,geometry,draw});
- if(typeof module!=='undefined')module.exports=G;if(typeof window!=='undefined')window.StudyGenerator=G;
+ if(typeof module!=='undefined')module.exports={...G,advance};if(typeof window!=='undefined')window.StudyGenerator=G;
 })();

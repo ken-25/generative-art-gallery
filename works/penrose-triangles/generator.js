@@ -23,5 +23,5 @@
   return [0,1].map(type=>{const list=g.tiles.filter(t=>t[0]===type);return list.length?`<path d="${list.map(([,a,b,c])=>`M${round(a[0])} ${round(a[1])}L${round(b[0])} ${round(b[1])}L${round(c[0])} ${round(c[1])}Z`).join('')}" fill="${p[1+type]}"${s.outline?` stroke="${p[0]}" stroke-width="${s.outline}" stroke-linejoin="round"`:''}/>`:'';}).join('');
  }
  const G=C.create({slug:'penrose-triangles',title:'繰り返さない秩序',defaults,schema,geometry,draw});
- if(typeof module!=='undefined')module.exports=G;if(typeof window!=='undefined')window.StudyGenerator=G;
+ if(typeof module!=='undefined')module.exports={...G,subdivide};if(typeof window!=='undefined')window.StudyGenerator=G;
 })();

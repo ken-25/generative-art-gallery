@@ -1,12 +1,13 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),G=require('./generator.js'),share=require('../../assets/share.js');
 const rows=s=>G.geometry({...G.defaults,...s}).rows.map(r=>[...r]);
-test('rule bits follow the 4l+2c+r neighbourhood order',()=>{
- // A rule with a single bit set turns a cell on only for that neighbourhood.
- for(let b=0;b<8;b++){
-  const l=b>>2&1,c=b>>1&1,r=b&1,n=16,start=new Array(n).fill(0);start[7]=l;start[8]=c;start[9]=r;
-  const [first,second]=rows({preset:'custom',rule:1<<b,init:'random',density:0.05,columns:n,generations:16,seed:'x'});
-  const expected=first.map((_,i)=>((first[(i+n-1)%n]<<2|first[i]<<1|first[(i+1)%n])===b)?1:0);assert.deepEqual(second,expected,'bit '+b);
+test('every rule 0-255 maps each of the 8 neighbourhoods to its bit 4l+2c+r',()=>{
+ for(let rule=0;rule<256;rule++)for(let b=0;b<8;b++){
+  // A row of 7 zeros with the neighbourhood (l,c,r) placed at columns 2..4; column 3 must become bit b of the rule.
+  const row=new Uint8Array(7);row[2]=b>>2&1;row[3]=b>>1&1;row[4]=b&1;
+  assert.equal(G.advance(row,rule)[3],rule>>b&1,`rule ${rule}, neighbourhood ${b}`);
  }
+ // The boundary is periodic: column 0's left neighbour is the last column.
+ assert.deepEqual([...G.advance(Uint8Array.from([0,0,0,0,1]),2)],[0,0,0,1,0]);assert.deepEqual([...G.advance(Uint8Array.from([1,0,0,0,0]),2)],[0,0,0,0,1]);
  assert.equal(G.geometry({...G.defaults,preset:'110'}).rule,110);assert.equal(G.geometry({...G.defaults,preset:'custom',rule:77}).rule,77);
 });
 test('rule 0, 255 and 90 behave as known',()=>{

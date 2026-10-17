@@ -27,5 +27,18 @@ test('the view clips a finite patch, turns with rotation and stays finite',()=>{
  assert(!/NaN|Infinity/.test(G.svg({depth:NaN,zoom:Infinity,rotation:-1})));
  const s=G.normalize({...G.defaults,depth:4,rotation:17,palette:'clay'});assert.equal(G.svg(s),G.svg(share.decode(share.encode(s,G),G)));
 });
+test('children lie inside their parent, never overlap, and meet edge to edge',()=>{
+ const inside=(p,[,a,b,c])=>{const d=signed([0,a,b,c]);return [[p,b,c],[a,p,c],[a,b,p]].every(([x,y,z])=>signed([0,x,y,z])/d>=-1e-9);};
+ for(const parent of whole(3))for(const child of G.subdivide(parent))for(const v of child.slice(1))assert(inside(v,parent));
+ // Separating axis test: two triangles' interiors are disjoint if some edge normal separates them (touching allowed).
+ const disjoint=(s,t)=>{const P=s.slice(1),Q=t.slice(1);for(const T of [P,Q])for(let i=0;i<3;i++){const [p,q]=[T[i],T[(i+1)%3]],n=[q[1]-p[1],p[0]-q[0]],len=Math.hypot(...n),proj=V=>V.map(v=>(v[0]*n[0]+v[1]*n[1])/len);const a=proj(P),b=proj(Q);if(Math.max(...a)<=Math.min(...b)+1e-7||Math.max(...b)<=Math.min(...a)+1e-7)return true;}return false;};
+ const tiles=whole(4);for(let i=0;i<tiles.length;i++)for(let j=i+1;j<tiles.length;j++)assert(disjoint(tiles[i],tiles[j]),`${i}/${j}`);
+ // Every edge is shared by exactly two tiles with the same endpoints, except edges on the decagon's rim.
+ const key=p=>p.map(v=>Math.round(v*1e6)).join(','),edges=new Map();
+ for(const [,a,b,c]of tiles)for(const [p,q]of [[a,b],[b,c],[c,a]]){const k=[key(p),key(q)].sort().join('|');edges.set(k,[...(edges.get(k)||[]),[p,q]]);}
+ const rim=300*Math.cos(Math.PI/10);let rimLength=0;
+ for(const list of edges.values()){assert(list.length<=2);if(list.length===1){const [p,q]=list[0],m=[(p[0]+q[0])/2-450,(p[1]+q[1])/2-300];assert(Math.hypot(...m)>=rim-1e-6,'T-junction or gap inside the patch');rimLength+=Math.hypot(q[0]-p[0],q[1]-p[1]);}}
+ assert(Math.abs(rimLength-10*2*300*Math.sin(Math.PI/10))<1e-6);
+});
 const {createHash}=require('node:crypto'),fixture=require('./share-v1.json');
 test('saved generator-1 share URL preserves SVG geometry and palette',()=>{assert.equal(createHash('sha256').update(G.svg(share.decode(fixture.fragment,G))).digest('hex'),fixture.svgSha256);});

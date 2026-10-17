@@ -39,5 +39,5 @@
   return g.pieces.map((list,i)=>`<path d="${list.map(piece=>{const pts=piece.filter((_,k)=>k%DRAW_EVERY===0||k===piece.length-1);let [px,py]=[round(pts[0][0]),round(pts[0][1])],d=`M${px} ${py}`;for(const [x,y]of pts.slice(1)){const [qx,qy]=[round(x),round(y)];d+=`l${round(qx-px)} ${round(qy-py)}`;[px,py]=[qx,qy];}return d;}).join('')}" fill="none" stroke="${p[1+i%2]}" stroke-width="0.9" stroke-opacity="0.6" stroke-linecap="round" stroke-linejoin="round"/>`).join('');
  }
  const G=C.create({slug:'flocking-trails',title:'群れの軌跡',defaults,schema,geometry,draw,simulate,simulationKeys:['count','separation','alignment','cohesion','radius','steps','seed']});
- if(typeof module!=='undefined')module.exports=G;if(typeof window!=='undefined')window.StudyGenerator=G;
+ if(typeof module!=='undefined')module.exports={...G,step};if(typeof window!=='undefined')window.StudyGenerator=G;
 })();
