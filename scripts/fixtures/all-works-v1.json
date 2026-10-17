@@ -1180,5 +1180,50 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A120%2C%22separation%22%3A3%2C%22alignment%22%3A3%2C%22cohesion%22%3A3%2C%22radius%22%3A120%2C%22steps%22%3A500%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
     "svgSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574",
     "svgPortableSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 1200,
+      "stickiness": 1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1200%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "3b4b698e96b01d0d7ebff2edd07af87c0493e0c49cad2f0ca87721c2c9dde4dc",
+    "svgPortableSha256": "3b4b698e96b01d0d7ebff2edd07af87c0493e0c49cad2f0ca87721c2c9dde4dc"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 50,
+      "stickiness": 0.1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A50%2C%22stickiness%22%3A0.1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "760a21185cb4c6d67f1419d44f8326bb61ad8b71885eaa72d25dee8968557b19",
+    "svgPortableSha256": "760a21185cb4c6d67f1419d44f8326bb61ad8b71885eaa72d25dee8968557b19"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 1500,
+      "stickiness": 1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1500%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee",
+    "svgPortableSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee"
   }
 ]

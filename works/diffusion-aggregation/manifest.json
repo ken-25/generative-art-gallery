@@ -1,0 +1,17 @@
+{
+  "slug": "diffusion-aggregation",
+  "title": "さまよって付く",
+  "description": "でたらめに歩く粒子が、塊に触れたところで止まる。先に伸びた枝ほど、次の粒子を受け止める。",
+  "addedAt": "2026-10-17T20:00:00Z",
+  "tags": [
+    "simulation",
+    "randomness"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Witten・Sander「Diffusion-Limited Aggregation, a Kinetic Critical Phenomenon」Physical Review Letters 47（1981）",
+      "url": "https://journals.aps.org/prl/abstract/10.1103/PhysRevLett.47.1400"
+    }
+  ]
+}

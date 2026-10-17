@@ -17,8 +17,8 @@ test('Mandelbrot starts at z=0 and varies c; Julia fixes c and varies z',()=>{
 });
 test('view, chunked computation and normalisation are deterministic and finite',()=>{
  const zoomed=G.geometry({...G.defaults,zoom:8,centerX:-0.3,centerY:0.2});assert.equal(zoomed.view.half,0.2);assert.notDeepEqual(zoomed.julia,G.geometry(G.defaults).julia);
- const s={...G.defaults,cRe:-0.4,cIm:0.6,iterations:64},job=G.task(s);let steps=0;while(!job.step())steps++;assert(steps>10);assert.equal(G.task(s),null);
- const direct=G.svg(s);assert.equal(G.svg(s),direct);
+ const s={...G.defaults,cRe:-0.4,cIm:0.6,iterations:64},direct=G.svg(s);G.svg(G.defaults);
+ const job=G.task(s);let steps=0;while(!job.step())steps++;assert(steps>10);assert.equal(G.task(s),null);assert.equal(G.svg(s),direct);
  const fresh={...s,cRe:-0.405};const cancelled=G.task(fresh);cancelled.step();cancelled.cancel();assert.notEqual(G.task(fresh),null);assert.equal(G.svg(fresh),G.svg(fresh));
  assert(!/NaN|Infinity/.test(G.svg({cRe:NaN,cIm:Infinity,zoom:0,iterations:1e9})));
  const n=G.normalize({...G.defaults,cRe:-0.123,zoom:3.5,palette:'clay'});assert.equal(G.svg(n),G.svg(share.decode(share.encode(n,G),G)));
