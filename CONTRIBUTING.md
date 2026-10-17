@@ -6,7 +6,7 @@
 
 1. `templates/study/index.html` を `works/<slug>/index.html` にコピーし、タイトル・説明・操作のポイント・出典を差し替えます。公開後も同じslugを使います。
 2. 作品フォルダに `generator.js`、`controls.js`、`preview.webp`、`manifest.json` を置きます。ひな形の [UI定義](templates/study/controls.js) と [manifest](templates/study/manifest.json) を参照してください。
-3. 生成器は `StudyCore.create({slug,title,schema,defaults,geometry,draw})` を使い、`window.StudyGenerator` とNode.jsの `module.exports` に公開します。純粋な計算にし、DOM操作は共通UIに任せます。`schema` は数値のmin/max/stepまたは選択肢のoptionsを持ちます。
+3. 生成器は `StudyCore.create({slug,title,schema,defaults,geometry,draw})` を使い、`window.StudyGenerator` とNode.jsの `module.exports` に公開します。純粋な計算にし、DOM操作は共通UIに任せます。`schema` は数値のmin/max/stepまたは選択肢のoptionsを持ちます。重い計算は `simulate`（途中で `yield` するgenerator関数）と、その結果に影響する設定名の `simulationKeys` を渡すと、共通UIが描画の合間に分割して計算し、設定が変わると古い計算を中断します。上限で止めた理由などは `note` で設定欄の上に表示できます。結果がJavaScriptエンジンによって変わらないよう、カオス的な計算では `Math.hypot` や三角関数の誤差が増幅しない書き方にしてください（`StudyCore.direction` など）。
 4. `controls.js` には各変数の日本語ラベル、変化の効果を説明するhelp、必要な単位を定義します。連続値や段階的に試す値はrange、行列数や線分数など直接入力する値はnumber、選択肢はschema.optionsを使います。画面上の説明を変えるために生成器v1を変更しないでください。
 5. 関連する重みにはgroupを付け、無効な組み合わせはactive関数で非表示・無効化します。非表示でも設定値は保持し、共有URLに全項目を含めます。数値や重みの合計が0のときの動作も説明してください。
 6. 作品本文は「何が見えるか」「どの値でどう変わるか」を書き、作品固有の出典と共通利用条件へのリンクを添えます。制作記録への相対Markdownリンクは閲覧画面に置きません。作品の数理・設定・参照資料・取り込んだ素材と利用条件は、作品フォルダの `DESIGN.md` に記録します。
