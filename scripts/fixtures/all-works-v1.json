@@ -967,5 +967,56 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22system%22%3A%22branch%22%2C%22points%22%3A20000%2C%22ratio%22%3A0.7%2C%22spread%22%3A80%2C%22w0%22%3A10%2C%22w1%22%3A10%2C%22w2%22%3A10%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22ifs-001%22%7D%7D",
     "svgSha256": "ed8c769a5c41854e705a92e1bf1168588d7c056939dec2b4819c1a0e8ff7df06",
     "svgPortableSha256": "ed8c769a5c41854e705a92e1bf1168588d7c056939dec2b4819c1a0e8ff7df06"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": -0.745,
+      "cIm": 0.12,
+      "centerX": 0,
+      "centerY": 0,
+      "zoom": 1,
+      "iterations": 128,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-0.745%2C%22cIm%22%3A0.12%2C%22centerX%22%3A0%2C%22centerY%22%3A0%2C%22zoom%22%3A1%2C%22iterations%22%3A128%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c",
+    "svgPortableSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": -2,
+      "cIm": -1.2,
+      "centerX": -2,
+      "centerY": -2,
+      "zoom": 1,
+      "iterations": 16,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-2%2C%22cIm%22%3A-1.2%2C%22centerX%22%3A-2%2C%22centerY%22%3A-2%2C%22zoom%22%3A1%2C%22iterations%22%3A16%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372",
+    "svgPortableSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": 0.6,
+      "cIm": 1.2,
+      "centerX": 2,
+      "centerY": 2,
+      "zoom": 64,
+      "iterations": 256,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A0.6%2C%22cIm%22%3A1.2%2C%22centerX%22%3A2%2C%22centerY%22%3A2%2C%22zoom%22%3A64%2C%22iterations%22%3A256%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580",
+    "svgPortableSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580"
   }
 ]

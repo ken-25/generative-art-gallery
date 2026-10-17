@@ -1,0 +1,17 @@
+{
+  "slug": "julia-mandelbrot",
+  "title": "ふたつの複素平面",
+  "description": "z→z²+cの反復を、cを動かす地図と、zを動かす図で見比べる。",
+  "addedAt": "2026-10-17T16:00:00Z",
+  "tags": [
+    "mathematics",
+    "fractal"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Douady・Hubbard『Étude dynamique des polynômes complexes』英訳（Cornell大学公開）",
+      "url": "https://pi.math.cornell.edu/~hubbard/OrsayEnglish.pdf"
+    }
+  ]
+}
