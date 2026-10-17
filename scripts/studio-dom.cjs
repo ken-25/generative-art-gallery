@@ -117,6 +117,14 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    assert.equal(shape(await page.evaluate(()=>window.__copied)),shape(await svgSnapshot()));
    await heavy(3700);const png=await exportFile();assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');await verifyPixels(await svgSnapshot(),png,'PNG requested mid-computation');
    assert.equal(metadata(await svgSnapshot()).iterations,3700);
+   // The PNG size and settings are fixed when the save is clicked, even if the dialog changes while waiting.
+   await heavy(3600);await format('png');await page.locator('#png-size').selectOption('1600');let pngWait=page.waitForEvent('download');await page.locator('#download-file').click();
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true');await page.locator('#png-size').selectOption('2400');
+   const sized=await fs.readFile(await (await pngWait).path());assert.equal(Math.max(sized.readUInt32BE(16),sized.readUInt32BE(20)),1600,'size chosen at click');await closeDialog();
+   // Changing the drawing while the save waits cancels it rather than saving different settings.
+   downloads=0;page.on('download',count);await heavy(3500);await format('svg');await page.locator('#download-file').click();
+   await page.locator('#iterations').evaluate(e=>{e.value='3400';e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));});
+   await page.waitForFunction(()=>/設定が変わった/.test(document.getElementById('dialog-status').textContent));await settle();assert.equal(downloads,0);page.off('download',count);await closeDialog();
    const longest=await page.evaluate(()=>window.__longest);assert.ok(longest<400,'longest main-thread task '+longest+'ms');
    console.log(`PASS save/copy/PNG during chunked computation wait for the job; longest task ${Math.round(longest)}ms`);
   }

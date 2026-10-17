@@ -129,12 +129,14 @@
    }catch(e){if(!active(token))return;if(e.name==='AbortError')status.textContent='共有をキャンセルしました。';else if(e.name==='NotAllowedError')retryMessage();else status.textContent='PNGを共有できませんでした。保存とリンクコピーをご利用ください。';}
   };
   // render() returns a promise while a heavy study is still computing; wait for it instead of computing synchronously.
-  const drawn=async()=>{const pending=render();if(pending){status.textContent='図形の計算を待っています。';await pending;}};
+  // The output is fixed at click time: if the settings change while waiting, the request is cancelled instead.
+  const drawn=async()=>{const pending=render(),clicked=JSON.stringify(G.normalize(read()));if(pending){status.textContent='図形の計算を待っています。';await pending;}
+   const same=JSON.stringify(G.normalize(read()))===clicked;if(!same)status.textContent='計算中に設定が変わったため、取り消しました。もう一度操作してください。';return same;};
   const withPNG=async action=>{
    if(busy||!dialog.open)return;busy=true;syncBusy();status.textContent='PNGを準備しています。';
    const token=session,version=revision;
    try{
-    await drawn();if(!active(token))return;status.textContent='PNGを準備しています。';const snapshot={key:imageKey(),svg:G.svg(G.normalize(read())),edge:Number(size.value)};
+    const key=imageKey(),edge=Number(size.value);if(!await drawn()||!active(token))return;status.textContent='PNGを準備しています。';const snapshot={key,svg:G.svg(G.normalize(read())),edge};
     let file=prepared?.key===snapshot.key?prepared.file:null;if(!file)file=new File([await pngBlob(snapshot.svg,snapshot.edge)],slug+'.png',{type:'image/png'});
     if(version===revision&&imageKey()===snapshot.key){prepared={key:snapshot.key,file};imageShare.textContent='準備済みPNGを共有';}
     if(active(token))await action(file,token);
@@ -144,7 +146,7 @@
   download.addEventListener('click',()=>{
    if(!dialog.open||dialog.dataset.mode!=='save'||busy)return;
    if(format.value==='png')withPNG(async(file,token)=>{if(!active(token))return;save(file,slug+'.png');status.textContent='PNGの保存を開始しました。';track('download_png','png');});
-   else{const token=session;busy=true;syncBusy();drawn().then(()=>{if(!active(token))return;save(new Blob([G.svg(G.normalize(read()))],{type:'image/svg+xml;charset=utf-8'}),slug+'.svg');status.textContent='SVGの保存を開始しました。';track('download_svg','svg');}).finally(()=>finishBusy(token));}
+   else{const token=session;busy=true;syncBusy();drawn().then(same=>{if(!same||!active(token))return;save(new Blob([G.svg(G.normalize(read()))],{type:'image/svg+xml;charset=utf-8'}),slug+'.svg');status.textContent='SVGの保存を開始しました。';track('download_svg','svg');}).finally(()=>finishBusy(token));}
   });
   imageShare.addEventListener('click',()=>{
    if(busy||!dialog.open||dialog.dataset.mode!=='share')return;const token=session;
@@ -154,7 +156,7 @@
   const copy=async(kind)=>{
    if(!dialog.open||dialog.dataset.mode!==(kind==='svg'?'save':'share'))return;
    // A link needs only the settings; SVG code waits for the drawing.
-   const token=session,sequence=++copySequence;if(kind==='svg')await drawn();else render();if(!active(token)||sequence!==copySequence)return;
+   const token=session,sequence=++copySequence;if(kind==='svg'){if(!await drawn())return;}else render();if(!active(token)||sequence!==copySequence)return;
    const version=revision,text=kind==='svg'?G.svg(G.normalize(read())):shareURL();
    if(kind==='url')urlField.value=text;
    try{if(!navigator.clipboard?.writeText)throw Error();await navigator.clipboard.writeText(text);if(active(token)&&version===revision&&sequence===copySequence){status.textContent=kind==='svg'?'SVGコードをコピーしました。':'共有URLをコピーしました。';if(kind==='url')track('share_link','copy');}}
