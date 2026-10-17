@@ -1270,5 +1270,53 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A7%2C%22rotation%22%3A359%2C%22zoom%22%3A3%2C%22outline%22%3A2%2C%22palette%22%3A%22fern%22%7D%7D",
     "svgSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c",
     "svgPortableSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c"
+  },
+  {
+    "slug": "voronoi-relaxation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 90,
+      "iterations": 4,
+      "style": "both",
+      "markers": "show",
+      "palette": "clay",
+      "seed": "voronoi-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A90%2C%22iterations%22%3A4%2C%22style%22%3A%22both%22%2C%22markers%22%3A%22show%22%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22voronoi-001%22%7D%7D",
+    "svgSha256": "a523ffe56f724c6f73d46e7a4d1c097af8710b9e8338c839551e2ac13aa0ca6a",
+    "svgPortableSha256": "a523ffe56f724c6f73d46e7a4d1c097af8710b9e8338c839551e2ac13aa0ca6a"
+  },
+  {
+    "slug": "voronoi-relaxation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 2,
+      "iterations": 0,
+      "style": "both",
+      "markers": "show",
+      "palette": "clay",
+      "seed": "voronoi-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A2%2C%22iterations%22%3A0%2C%22style%22%3A%22both%22%2C%22markers%22%3A%22show%22%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22voronoi-001%22%7D%7D",
+    "svgSha256": "d261a07b9537f3823c78834e6f4f3e618f46b2f060bea40c90f6b1b53db7b3b4",
+    "svgPortableSha256": "d261a07b9537f3823c78834e6f4f3e618f46b2f060bea40c90f6b1b53db7b3b4"
+  },
+  {
+    "slug": "voronoi-relaxation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 200,
+      "iterations": 20,
+      "style": "both",
+      "markers": "show",
+      "palette": "clay",
+      "seed": "voronoi-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A200%2C%22iterations%22%3A20%2C%22style%22%3A%22both%22%2C%22markers%22%3A%22show%22%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22voronoi-001%22%7D%7D",
+    "svgSha256": "7bee25015daf5c0b09cb01a7cf7001a480fdd985aa04238710a6c979f993a18c",
+    "svgPortableSha256": "7bee25015daf5c0b09cb01a7cf7001a480fdd985aa04238710a6c979f993a18c"
   }
 ]
