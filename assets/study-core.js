@@ -1,6 +1,4 @@
-/* Project-owned utilities for new mathematical studies (MIT).
-   Seed hashing uses a base-31 recurrence; sampling uses the standard numerical
-   LCG recurrence (1664525*x + 1013904223 mod 2^32). Not cryptographic. */
+/* Project-owned utilities for new mathematical studies (MIT). Not cryptographic. */
 (() => {
  'use strict';
  const escape=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
