@@ -28,10 +28,8 @@ export function externalLinks(html,pageURL,siteURL){
   const set=(name,value,encoded=false)=>{const next={name,value,raw:` ${name}="${encoded?value.replace(/"/g,'&quot;'):escape(value)}"`},index=attrs.findIndex(a=>a.name===name);if(index<0)attrs.push(next);else{attrs[index]=next;for(let i=attrs.length-1;i>index;i--)if(attrs[i].name===name)attrs.splice(i,1);}};
   const rel=new Set(decode(get('rel')?.value||'').toLowerCase().split(/\s+/).filter(t=>t&&t!=='opener'));
   rel.add('noopener');rel.add('noreferrer');set('target','_blank');set('rel',[...rel].join(' '));set('data-external-link','');
-  for(const name of ['title','aria-label']){
-   const attr=get(name);if(name==='aria-label'&&!attr)continue;
-   const value=decode(attr?.value||'');if(!value.includes('新しいタブ'))set(name,attr?attr.value+notice:'新しいタブで開きます',!!attr);
-  }
+  const label=get('aria-label');
+  if(label&&!decode(label.value).includes('新しいタブ'))set('aria-label',label.value+notice,true);
   return tag.slice(0,2)+attrs.map(a=>a.raw).join('')+'>';
  });
 }
