@@ -1,0 +1,9 @@
+window.StudyControlDefinitions={
+ rho:{label:'ρ',help:'Lorenzの式の3つ目の定数。約24.74より小さいと軌道は一点に落ち着き、28付近で二つの輪を行き来する蝶の形になります。σ=10、β=8/3は固定です。',control:'range',unit:''},
+ x0:{label:'初期位置x',help:'計算を始める点のx座標。わずかに変えても、時間がたつと軌道の細部はまったく違うものになります。',control:'range',unit:''},
+ y0:{label:'初期位置y',help:'計算を始める点のy座標です。x・y・zをすべて0にすると、原点の平衡点から動きません。',control:'range',unit:''},
+ z0:{label:'初期位置z',help:'計算を始める点のz座標です。',control:'range',unit:''},
+ projection:{label:'投影面',help:'3次元の軌道を見る向き。x–zでは蝶の形、x–yとy–zでは別の角度からの姿になります。'},
+ points:{label:'軌道の点数',help:'描く点の数。最初の1,000ステップは落ち着くまでの区間として描きません。',control:'number',unit:''},
+ width:{label:'線幅',help:'線の太さを変えます。',control:'range',unit:''}
+};

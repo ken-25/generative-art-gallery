@@ -1,0 +1,18 @@
+{
+  "slug": "penrose-triangles",
+  "number": 22,
+  "title": "繰り返さない秩序",
+  "description": "黄金比で三角形を分け続けると、どこまでも同じ並びを繰り返さない敷き詰めが現れる。",
+  "addedAt": "2026-10-17T09:40:00Z",
+  "tags": [
+    "geometry",
+    "tiling"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Oxford Mathematics「Aperiodic Tiles」",
+      "url": "https://www.maths.ox.ac.uk/outreach/oxford-mathematics-alphabet/aperiodic-tiles"
+    }
+  ]
+}

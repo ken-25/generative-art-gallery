@@ -1,5 +1,6 @@
 {
   "slug": "lissajous",
+  "number": 3,
   "title": "ふたつの振動",
   "description": "横と縦、ふたつの周期が重なって一本の線になる。",
   "addedAt": "2026-10-16T09:38:19Z",

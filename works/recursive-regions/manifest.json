@@ -1,5 +1,6 @@
 {
   "slug": "recursive-regions",
+  "number": 4,
   "title": "分かれる余白",
   "description": "三角形の分割と線の密度で、領域の表情を探る。",
   "addedAt": "2026-10-16T11:03:00Z",

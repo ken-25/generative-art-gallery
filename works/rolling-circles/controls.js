@@ -1,0 +1,9 @@
+window.StudyControlDefinitions={
+ R:{label:'固定円の半径',help:'内側を転がされる、固定した円の半径です。転がる円の半径との比で花びらの数が決まります。',control:'number',unit:''},
+ r:{label:'転がる円の半径',help:'固定円の内側を転がる円の半径。固定円より小さくしてください。等しいか大きいときは線を描きません。',control:'number',unit:''},
+ d:{label:'描点の距離',help:'転がる円の中心から線を描く点までの距離。0では円に、大きくすると花びらがループになります。',control:'range',unit:''},
+ rotation:{label:'回転',help:'曲線全体を回す角度です。',control:'range',unit:'°'},
+ curves:{label:'曲線の数',help:'同じ曲線を、位相差ずつ回して重ねる数です。',control:'number',unit:''},
+ phase:{label:'曲線ごとの位相差',help:'重ねる曲線どうしの回転角の差。0ではすべて同じ位置に重なります。',control:'range',unit:'°',active:s=>s.curves>1},
+ width:{label:'線幅',help:'線の太さを変えます。',control:'range',unit:''}
+};

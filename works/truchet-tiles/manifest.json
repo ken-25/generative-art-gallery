@@ -1,5 +1,6 @@
 {
   "slug": "truchet-tiles",
+  "number": 2,
   "title": "四つの向き",
   "description": "二色に分けた一枚のタイルを、回して並べる。",
   "addedAt": "2026-10-16T09:35:08Z",

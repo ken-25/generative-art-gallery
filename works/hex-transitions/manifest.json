@@ -1,5 +1,6 @@
 {
   "slug": "hex-transitions",
+  "number": 9,
   "title": "色のつづき",
   "description": "六角形の並びをたどり、前の色から次の色を選ぶ。",
   "addedAt": "2026-10-16T11:17:00Z",

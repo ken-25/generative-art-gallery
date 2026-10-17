@@ -1,0 +1,18 @@
+{
+  "slug": "reaction-diffusion",
+  "number": 19,
+  "title": "反応と拡散の斑",
+  "description": "二つの物質が反応しながら広がる。補う速さと消える速さの違いで、斑点や迷路が現れる。",
+  "addedAt": "2026-10-17T09:40:00Z",
+  "tags": [
+    "mathematics",
+    "simulation"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "MIT CSAIL「Gray-Scott Model of a Reaction-Diffusion System」",
+      "url": "https://groups.csail.mit.edu/mac/projects/amorphous/GrayScott/"
+    }
+  ]
+}

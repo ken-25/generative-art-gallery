@@ -1,0 +1,18 @@
+{
+  "slug": "branching-rules",
+  "number": 15,
+  "title": "書き換えて育つ枝",
+  "description": "短い書き換え規則を世代ごとに繰り返すと、描画命令が伸びて枝分かれが育つ。",
+  "addedAt": "2026-10-17T09:40:00Z",
+  "tags": [
+    "mathematics",
+    "l-system"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Prusinkiewicz・Lindenmayer『The Algorithmic Beauty of Plants』（1990）",
+      "url": "https://algorithmicbotany.org/papers/abop/abop.pdf"
+    }
+  ]
+}

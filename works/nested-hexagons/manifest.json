@@ -1,5 +1,6 @@
 {
   "slug": "nested-hexagons",
+  "number": 11,
   "title": "重なる六つの辺",
   "description": "不等な帯の中で、六角形の層が寄り添い、少しずつずれる。",
   "addedAt": "2026-10-16T11:19:00Z",

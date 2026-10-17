@@ -7,14 +7,14 @@ test('catalog ordering, independent additions and validation',async()=>{
  try {
   for(const slug of ['alpha','beta']) {
    await cp('works/lissajous',`${dir}/${slug}`,{recursive:true});
-   const m=JSON.parse(await readFile(`${dir}/${slug}/manifest.json`));m.slug=slug;
+   const m=JSON.parse(await readFile(`${dir}/${slug}/manifest.json`));m.slug=slug;m.number=slug==='alpha'?1:2;
    await writeFile(`${dir}/${slug}/manifest.json`,JSON.stringify(m));
   }
   assert.deepEqual((await catalog(dir)).map(m=>m.slug),['alpha','beta']);
   const sourceFile=`${dir}/alpha/index.html`;await writeFile(sourceFile,(await readFile(sourceFile,'utf8'))+'<a href="mailto:hello@example.org">mail</a><a href="//example.org/reference">source</a><a href="/generative-art-gallery/about/">about</a>');
   assert.equal((await catalog(dir)).length,2);
   const file=`${dir}/alpha/manifest.json`, original=JSON.parse(await readFile(file));
-  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]}]){
+  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]},{number:undefined},{number:0},{number:1.5},{number:'1'},{number:2}]){
    await writeFile(file,JSON.stringify({...original,...patch}));await assert.rejects(catalog(dir));
   }
   assert.equal(escape('<script>"&'), '&lt;script&gt;&quot;&amp;');
@@ -35,17 +35,17 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   }
   for(const slug of ['alpha','beta']){
    await cp('works/lissajous',`${dir}/works/${slug}`,{recursive:true});
-   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
+   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.number=slug==='alpha'?901:902;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
   }
   const run=()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'',GOOGLE_TAG_ID:'',SITE_URL:'https://example.org/sub/'}});
   const snapshot=async(folder)=>{const files={};for(const e of await readdir(folder,{withFileTypes:true})){const p=path.join(folder,e.name);if(e.isDirectory())Object.assign(files,await snapshot(p));else files[path.relative(dir,p)]=(await readFile(p)).toString('base64');}return files;};
   run();const first=await snapshot(`${dir}/dist`);run();assert.deepEqual(await snapshot(`${dir}/dist`),first);
-  const html=await readFile(`${dir}/dist/index.html`,'utf8'),map=await readFile(`${dir}/dist/sitemap.xml`,'utf8');
-  const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`));assert.equal(list.length,baseline+2);assert.ok(html.includes(String(baseline+2).padStart(2,'0')+' WORKS'));assert.ok(html.includes('&lt;b&gt; &amp; &quot; title $$ $&amp; $`'));
+  const html=await readFile(`${dir}/dist/index.html`,'utf8'),lists=(await Promise.all(Array.from({length:Math.ceil((baseline+2)/20)},(_,i)=>readFile(`${dir}/dist/${i?`page/${i+1}/`:''}index.html`,'utf8')))).join('').replaceAll('../../works/','works/'),map=await readFile(`${dir}/dist/sitemap.xml`,'utf8');
+  const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`));assert.equal(list.length,baseline+2);assert.ok(html.includes(String(baseline+2).padStart(2,'0')+' WORKS'));assert.ok(lists.includes('&lt;b&gt; &amp; &quot; title $$ $&amp; $`'));
   for(const slug of ['alpha','beta'])assert.ok((await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8')).includes('<title>&lt;b&gt; &amp; &quot; title $$ $&amp; $` — Generative Art Gallery</title>'));
-  for(const slug of ['alpha','beta']){assert.match(html,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const rendered=await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8');assert.match(rendered,/target="_blank" rel="noopener noreferrer"/);assert.match(rendered,/class="external-link-note">（新しいタブ）/);const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp(String(m.number).padStart(3,'0')+' /'));}
+  for(const slug of ['alpha','beta']){assert.match(lists,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const rendered=await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8');assert.match(rendered,/target="_blank" rel="noopener noreferrer"/);assert.match(rendered,/class="external-link-note">（新しいタブ）/);const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp('<p class="eyebrow">'+String(m.number).padStart(3,'0')+' / [A-Z]'));}
   assert.doesNotMatch(html,/<script/);assert.match(html,/fetchpriority="high"/);
-  assert.doesNotMatch(html,/theme-nav|theme-section/);assert.equal((html.match(/class="work-card"/g)||[]).length,baseline+2);assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
+  assert.doesNotMatch(html,/theme-nav|theme-section/);assert.equal((html.match(/class="work-card"/g)||[]).length,Math.min(baseline+2,20));assert.equal((lists.match(/class="work-card"/g)||[]).length,baseline+2);assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
   execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-TEST000000'}});
   for(const file of ['index.html','about/index.html','works/alpha/index.html','works/beta/index.html']){
    const tagged=await readFile(`${dir}/dist/${file}`,'utf8');assert.equal((tagged.match(/data-google-tag-id=/g)||[]).length,1);assert.match(tagged,/src="\/sub\/assets\/analytics.js"/);assert.match(tagged,/data-google-tag-enabled="true"/);if(file==='about/index.html')assert.match(tagged,/サイト改善のため、アクセスや保存・共有の利用状況を集計しています。/);
@@ -65,5 +65,5 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
 test('flat catalog preserves every artwork number',async()=>{
  const works=await catalog(path.resolve('works'));
  assert.ok(works.every(m=>!Object.hasOwn(m,'theme')));
- assert.deepEqual(works.slice(0,13).map(m=>m.slug),['order-and-chance','truchet-tiles','lissajous','recursive-regions','line-trails','octahedral-paths','layered-lines','density-field','hex-transitions','flow-and-silence','nested-hexagons','probability-segments','ink-on-water']);
+ assert.deepEqual(works.slice(0,24).map(m=>m.slug),['order-and-chance','truchet-tiles','lissajous','recursive-regions','line-trails','octahedral-paths','layered-lines','density-field','hex-transitions','flow-and-silence','nested-hexagons','probability-segments','ink-on-water','rolling-circles','branching-rules','chaos-game','julia-mandelbrot','elementary-automata','reaction-diffusion','flocking-trails','diffusion-aggregation','penrose-triangles','voronoi-relaxation','lorenz-orbit']);
 });

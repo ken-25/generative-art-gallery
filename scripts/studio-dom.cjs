@@ -10,6 +10,9 @@ const comparePNG=require('./png-reference.cjs');
 const {inspectControls,legacy}=require('./control-contract.cjs');
 (async()=>{
  const root=path.resolve('dist'),catalog=JSON.parse(await fs.readFile(path.join(root,'catalog.json')));
+ // List pages are newest first, 20 per page; artwork numbers stay chronological.
+ const ordered=[...catalog].sort((a,b)=>b.addedAt.localeCompare(a.addedAt)||a.slug.localeCompare(b.slug));
+ const listPages=Array.from({length:Math.max(1,Math.ceil(ordered.length/20))},(_,i)=>ordered.slice(i*20,i*20+20)),listRoutes=listPages.map((_,i)=>i?`page/${i+1}/`:'');
  const prefix='/generative-art-gallery/';
  const server=http.createServer(async(req,res)=>{
   try{
@@ -40,7 +43,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const state=()=>page.evaluate(()=>({svg:document.querySelector('#art').innerHTML,settings:[...document.querySelector('form').elements].filter(e=>e.name).map(e=>[e.name,e.type==='radio'?e.checked:e.value])}));
-  const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const settle=()=>page.evaluate(()=>new Promise(resolve=>{const wait=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelector('#art[aria-busy=true]')?setTimeout(wait,10):resolve()));wait();}));
   const closeDialog=async()=>{if(await page.locator('#studio-dialog').evaluate(d=>d.open)){await page.locator('#dialog-close').click();await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);await settle();}};
   const openDialog=async mode=>{const current=await page.locator('#studio-dialog').evaluate(d=>({open:d.open,mode:d.dataset.mode}));if(current.open&&current.mode!==mode)await closeDialog();if(!current.open||current.mode!==mode)await page.locator(mode==='save'?'#save-open':'#share-open').click();};
   const format=async value=>{await openDialog('save');if(await page.locator('#save-format').inputValue()!==value)await page.locator('#save-format').selectOption(value);};
@@ -66,7 +69,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   for(const width of [1440,375]){
    await page.setViewportSize({width,height:1000});
    for(const {slug,url:canonical}of catalog){
-    const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
+    const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();await settle();}
     const initial=await state();await verifyContract(slug);
     assert.equal(await page.locator('#actions>button').count(),2);assert.deepEqual(await page.locator('#actions>button').allTextContents(),['保存','共有']);assert.equal(await page.locator('#actions input,#actions select,#actions textarea,#actions #new-seed,#actions button[type=reset]').count(),0);
     assert.equal(await page.locator('#studio-dialog').evaluate(d=>d.open),false);assert.equal(await page.locator('script[data-google-tag-id]').count(),0);
@@ -94,6 +97,36 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     await page.goto(url+'#art=%7B');await settle();assert.deepEqual(await state(),initial);assert.match(await page.locator('#status').textContent(),/初期設定/);
     console.log(`PASS ${width}px ${slug}: complete controls, seed/reset, modal SVG/code/PNG, pixel references, v1, clipboard/native fallbacks`);
    }
+  }
+  // Saving, copying or making a PNG while a heavy study is still computing waits for the chunked job
+  // instead of recomputing synchronously, so the page never blocks for the whole simulation.
+  {
+   await page.setViewportSize({width:1440,height:1000});await page.goto(base+'works/reaction-diffusion/');await settle();
+   await page.evaluate(()=>{window.__longest=0;new PerformanceObserver(list=>{for(const e of list.getEntries())window.__longest=Math.max(window.__longest,e.duration);}).observe({type:'longtask',buffered:false});});
+   const heavy=async iterations=>{await closeDialog();await page.locator('#iterations').evaluate((e,v)=>{e.value=String(v);e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));},iterations);await page.waitForFunction(()=>document.querySelector('#art[aria-busy=true]'));};
+   const metadata=svg=>JSON.parse(svg.match(/<metadata>(.*?)<\/metadata>/)[1].replace(/&quot;/g,'"'));
+   const shape=svg=>svg.match(/ d="([^"]*)"/)[1];let downloads=0;const count=()=>downloads++;page.on('download',count);
+   // Closing the dialog while the save waits cancels it; the page stays responsive and nothing is saved.
+   await heavy(4000);await format('svg');await page.locator('#download-file').click();
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true','save requested mid-computation');assert.match(await page.locator('#dialog-status').textContent(),/計算を待っています/);
+   await page.locator('#dialog-close').click();await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true','dialog closes while computing');await settle();assert.equal(downloads,0);page.off('download',count);
+   await heavy(3900);await format('svg');const waiting=page.waitForEvent('download');await page.locator('#download-file').click();const saved=(await fs.readFile(await (await waiting).path())).toString();
+   assert.equal(metadata(saved).iterations,3900);assert.equal(shape(saved),shape(await svgSnapshot()));
+   await heavy(3800);await format('svg');await page.locator('#copy-svg').click();await page.waitForFunction(()=>window.__copied?.includes('&quot;iterations&quot;:3800'));
+   assert.equal(shape(await page.evaluate(()=>window.__copied)),shape(await svgSnapshot()));
+   await heavy(3700);const png=await exportFile();assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');await verifyPixels(await svgSnapshot(),png,'PNG requested mid-computation');
+   assert.equal(metadata(await svgSnapshot()).iterations,3700);
+   // The PNG size and settings are fixed when the save is clicked, even if the dialog changes while waiting.
+   await heavy(3600);await format('png');await page.locator('#png-size').selectOption('1600');let pngWait=page.waitForEvent('download');await page.locator('#download-file').click();
+   assert.equal(await page.locator('#art').getAttribute('aria-busy'),'true');await page.locator('#png-size').selectOption('2400');
+   const sized=await fs.readFile(await (await pngWait).path());assert.equal(Math.max(sized.readUInt32BE(16),sized.readUInt32BE(20)),1600,'size chosen at click');await closeDialog();
+   // Changing the drawing while the save waits cancels it rather than saving different settings.
+   downloads=0;page.on('download',count);await heavy(3500);await format('svg');await page.locator('#download-file').click();
+   await page.locator('#iterations').evaluate(e=>{e.value='3400';e.dispatchEvent(new Event('input',{bubbles:true}));e.dispatchEvent(new Event('change',{bubbles:true}));});
+   await page.waitForFunction(()=>/設定が変わった/.test(document.getElementById('dialog-status').textContent));await settle();assert.equal(downloads,0);page.off('download',count);await closeDialog();
+   const longest=await page.evaluate(()=>window.__longest);assert.ok(longest<400,'longest main-thread task '+longest+'ms');
+   console.log(`PASS save/copy/PNG during chunked computation wait for the job; longest task ${Math.round(longest)}ms`);
   }
   console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons`);
   // Dialog lifecycle at desktop, short portrait, and landscape sizes.
@@ -141,7 +174,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   const linksPage=await linksContext.newPage();
   try{
    let checked=0;
-   for(const route of ['', 'about/', ...catalog.map(m=>'works/'+m.slug+'/')]){
+   for(const route of [...listRoutes, 'about/', ...catalog.map(m=>'works/'+m.slug+'/')]){
     await linksPage.goto(base+route);
     const rows=await linksPage.locator('a[href]').evaluateAll(as=>{const canonical=document.querySelector('link[rel=canonical]').href,site=new URL('/generative-art-gallery/','https://ken-25.github.io');return as.map(a=>{const u=new URL(a.getAttribute('href'),canonical);return {external:!a.hasAttribute('download')&&['http:','https:'].includes(u.protocol)&&(u.origin!==site.origin||!(u.pathname===site.pathname.slice(0,-1)||u.pathname.startsWith(site.pathname))),target:a.getAttribute('target'),rel:a.rel.split(/\s+/),note:a.querySelector('.external-link-note')?.textContent,title:a.title};});});
     for(const a of rows){if(a.external){assert.equal(a.target,'_blank');assert.ok(a.rel.includes('noopener')&&a.rel.includes('noreferrer'));assert.equal(a.note,'（新しいタブ）');assert.match(a.title,/新しいタブ/);checked++;}else{assert.equal(a.target,null);assert.equal(a.note,undefined);}}
@@ -152,12 +185,26 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   }finally{await linksContext.close();}
   // Static unclassified list stays usable without page JavaScript.
   const home=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:667}});
-  try{await home.goto(base);assert.equal(await home.locator('.theme-nav,.theme-section').count(),0);assert.equal(await home.locator('a.work-card').count(),catalog.length);for(const [index,m]of catalog.entries()){const card=home.locator('a.work-card').nth(index);assert.equal(await card.getAttribute('href'),`works/${m.slug}/`);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));await card.locator('img').scrollIntoViewIfNeeded();await card.locator('img').evaluate(i=>i.decode());}assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}finally{await home.close();}
+  try{
+   await home.goto(base);
+   for(const [index,items]of listPages.entries()){
+    const route=listRoutes[index];if(index){assert.equal((await home.goto(base+route)).status(),200);assert.equal((await home.reload()).status(),200);}
+    assert.equal(home.url(),base+route);assert.equal(await home.locator('.theme-nav,.theme-section').count(),0);assert.equal(await home.locator('a.work-card').count(),items.length);
+    assert.equal(await home.locator('link[rel=canonical]').getAttribute('href'),new URL(route,'https://ken-25.github.io/generative-art-gallery/').href);assert.equal(await home.evaluate(()=>getComputedStyle(document.querySelector('.work-card')).display),'grid','stylesheet on '+route);
+    for(const [i,m]of items.entries()){const card=home.locator('a.work-card').nth(i);assert.equal(new URL(await card.getAttribute('href'),home.url()).href,base+`works/${m.slug}/`);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));assert.equal(await card.locator('img').getAttribute('loading'),i?'lazy':null);await card.locator('img').scrollIntoViewIfNeeded();await card.locator('img').evaluate(i=>i.decode());}
+    for(const link of ['.brand','header a[href$="about/"]']){const href=await home.locator(link).first().getAttribute('href');assert.equal((await home.request.get(new URL(href,home.url()).href)).status(),200,route+' '+link);}
+    const nav=home.locator('nav.pagination');assert.equal(await nav.count(),listPages.length>1?1:0);
+    if(listPages.length>1){assert.equal(await nav.locator('[aria-current=page]').textContent(),String(index+1));assert.equal(await nav.locator('[rel=prev]').count(),index?1:0);assert.equal(await nav.locator('[rel=next]').count(),index<listPages.length-1?1:0);for(const a of await nav.locator('a').all())assert.ok(listRoutes.map(r=>base+r).includes(new URL(await a.getAttribute('href'),home.url()).href));}
+    assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+    if(index<listPages.length-1){await nav.locator('[rel=next]').focus();await home.keyboard.press('Enter');await home.waitForURL(base+listRoutes[index+1]);await home.goBack();}
+   }
+   assert.deepEqual(listPages.flat().map(m=>m.slug).sort(),catalog.map(m=>m.slug).sort());
+  }finally{await home.close();}
   for(const [width,height]of [[320,568],[375,667],[667,375],[844,390]]){
-   await page.setViewportSize({width,height});for(const {slug}of catalog){await page.goto(base+'works/'+slug+'/');for(const selector of ['#settings input[type=range]','#settings input[type=text]','#save-open']){const control=page.locator(selector).first();if(!await control.count())continue;await control.focus();await settle();const r=await control.evaluate(e=>{const p=document.querySelector('.paper-area').getBoundingClientRect(),f=e.getBoundingClientRect();return {p:p.toJSON(),f:f.toJSON(),h:visualViewport.height,overflow:document.documentElement.scrollWidth>innerWidth,nested:[document.querySelector('.studio'),document.querySelector('.controls')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1)};});assert.equal(r.overflow,false);assert.equal(r.nested,false);assert.ok(r.p.height<=r.h*.4+1);assert.ok(r.f.top>=r.p.bottom+8&&r.f.bottom<=r.h-8);}}
+   await page.setViewportSize({width,height});for(const {slug}of catalog){await page.goto(base+'works/'+slug+'/');for(const selector of ['#settings input[type=range]:visible','#settings input[type=text]:visible','#save-open']){const control=page.locator(selector).first();if(!await control.count())continue;await control.focus();await settle();const r=await control.evaluate(e=>{const p=document.querySelector('.paper-area').getBoundingClientRect(),f=e.getBoundingClientRect();return {p:p.toJSON(),f:f.toJSON(),h:visualViewport.height,overflow:document.documentElement.scrollWidth>innerWidth,nested:[document.querySelector('.studio'),document.querySelector('.controls')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1)};});assert.equal(r.overflow,false);assert.equal(r.nested,false);assert.ok(r.p.height<=r.h*.4+1);assert.ok(r.f.top>=r.p.bottom+8&&r.f.bottom<=r.h-8,`${slug} ${width}x${height} ${selector}`);}}
   }
   for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();const svg=(await exportFile('svg')).toString().replace(/^<\?xml[^>]*>\s*/,'');assert.equal(crypto.createHash('sha256').update(portableSVG(svg)).digest('hex'),f.svgPortableSha256,f.slug+' archived SVG');}
   await page.goto(base+'about/#terms');assert.equal(await page.locator('#measurement').count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/集計しています|明示的に有効化/);assert.equal(await page.locator('a').evaluateAll(as=>as.some(a=>!a.getAttribute('href')?.startsWith('http')&&/\.md(?:#|$)/.test(a.getAttribute('href')||''))),false);assert.deepEqual(errors,[]);
-  console.log(`PASS flat no-JS list/${catalog.length} previews, 4 mobile sizes, ${JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json')).length} archived SVGs, reader copy and analytics-off notice; zero JS/network errors`);
+  console.log(`PASS flat no-JS list/${catalog.length} previews on ${listPages.length} page(s), 4 mobile sizes, ${JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json')).length} archived SVGs, reader copy and analytics-off notice; zero JS/network errors`);
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});
