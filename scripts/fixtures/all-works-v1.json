@@ -1072,5 +1072,59 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22custom%22%2C%22rule%22%3A255%2C%22init%22%3A%22single%22%2C%22density%22%3A0.95%2C%22columns%22%3A256%2C%22generations%22%3A256%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22eca-001%22%7D%7D",
     "svgSha256": "f7a94168f4bcc82f42397b14b1d90012c61935d4bef3cecdea7bb1fa8942459d",
     "svgPortableSha256": "f7a94168f4bcc82f42397b14b1d90012c61935d4bef3cecdea7bb1fa8942459d"
+  },
+  {
+    "slug": "reaction-diffusion",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "coral",
+      "feed": 0.04,
+      "kill": 0.06,
+      "seeds": 6,
+      "iterations": 3000,
+      "threshold": 0.25,
+      "palette": "clay",
+      "seed": "gs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22coral%22%2C%22feed%22%3A0.04%2C%22kill%22%3A0.06%2C%22seeds%22%3A6%2C%22iterations%22%3A3000%2C%22threshold%22%3A0.25%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22gs-001%22%7D%7D",
+    "svgSha256": "dd97bc7b5257ad550495f5cccc661592a60cae4e16f6d8f0e6ea7e120a8b3e98",
+    "svgPortableSha256": "dd97bc7b5257ad550495f5cccc661592a60cae4e16f6d8f0e6ea7e120a8b3e98"
+  },
+  {
+    "slug": "reaction-diffusion",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "coral",
+      "feed": 0.01,
+      "kill": 0.04,
+      "seeds": 1,
+      "iterations": 200,
+      "threshold": 0.1,
+      "palette": "clay",
+      "seed": "gs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22coral%22%2C%22feed%22%3A0.01%2C%22kill%22%3A0.04%2C%22seeds%22%3A1%2C%22iterations%22%3A200%2C%22threshold%22%3A0.1%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22gs-001%22%7D%7D",
+    "svgSha256": "2ee9712ad4c27cab7a662efcb43926448ed5ce17a3597329a657e2011b290e05",
+    "svgPortableSha256": "2ee9712ad4c27cab7a662efcb43926448ed5ce17a3597329a657e2011b290e05"
+  },
+  {
+    "slug": "reaction-diffusion",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "coral",
+      "feed": 0.1,
+      "kill": 0.07,
+      "seeds": 12,
+      "iterations": 4000,
+      "threshold": 0.5,
+      "palette": "clay",
+      "seed": "gs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22coral%22%2C%22feed%22%3A0.1%2C%22kill%22%3A0.07%2C%22seeds%22%3A12%2C%22iterations%22%3A4000%2C%22threshold%22%3A0.5%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22gs-001%22%7D%7D",
+    "svgSha256": "90d457b50a773bef775c1830fe0db298dec103697dec3c6b44913d4c7eaaf806",
+    "svgPortableSha256": "90d457b50a773bef775c1830fe0db298dec103697dec3c6b44913d4c7eaaf806"
   }
 ]
