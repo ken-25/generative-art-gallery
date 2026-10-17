@@ -1,0 +1,9 @@
+window.StudyControlDefinitions={
+ system:{label:'変換系',help:'点に繰り返し適用する縮小変換の組。三角形は三つの頂点へ縮め、枝は幹と左右の枝へ縮めます。'},
+ points:{label:'点の数',help:'描く点の数。最初の20回は形に近づく前の点として描きません。',control:'number',unit:''},
+ ratio:{label:'縮小率',help:'変換ごとに図形を縮める割合。小さいほど隙間が広く、大きいほど密になります。',control:'range',unit:''},
+ spread:{label:'枝の開き',help:'左右の枝を幹から開く角度。0では枝が幹の上にまっすぐ重なります。',control:'range',unit:'°',active:s=>s.system==='branch'},
+ w0:{label:'変換1の重み',help:'三角形では上の頂点、枝では幹を選ぶ重み。3つの重みの合計に対する割合で選びます。',control:'range',unit:'',group:'変換を選ぶ重み'},
+ w1:{label:'変換2の重み',help:'三角形では右下、枝では左の枝を選ぶ重み。0ではこの変換を選びません。',control:'range',unit:'',group:'変換を選ぶ重み'},
+ w2:{label:'変換3の重み',help:'三角形では左下、枝では右の枝を選ぶ重み。すべて0では点を描きません。',control:'range',unit:'',group:'変換を選ぶ重み'}
+};

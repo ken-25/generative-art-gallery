@@ -910,5 +910,62 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rule%22%3A%22alternate%22%2C%22generations%22%3A12%2C%22angle%22%3A90%2C%22shrink%22%3A1%2C%22width%22%3A6%2C%22palette%22%3A%22fern%22%7D%7D",
     "svgSha256": "f72d2be475a8d3fc60a860f496411a5303e3b5b2c219c01b4323046a7903de4f",
     "svgPortableSha256": "f72d2be475a8d3fc60a860f496411a5303e3b5b2c219c01b4323046a7903de4f"
+  },
+  {
+    "slug": "chaos-game",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "system": "branch",
+      "points": 12000,
+      "ratio": 0.6,
+      "spread": 38,
+      "w0": 2,
+      "w1": 4,
+      "w2": 4,
+      "palette": "fern",
+      "seed": "ifs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22system%22%3A%22branch%22%2C%22points%22%3A12000%2C%22ratio%22%3A0.6%2C%22spread%22%3A38%2C%22w0%22%3A2%2C%22w1%22%3A4%2C%22w2%22%3A4%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22ifs-001%22%7D%7D",
+    "svgSha256": "1bb743dfbbf29f580b5cddf957d677a62b30fbfdc247c7d4c97523875e620b24",
+    "svgPortableSha256": "1bb743dfbbf29f580b5cddf957d677a62b30fbfdc247c7d4c97523875e620b24"
+  },
+  {
+    "slug": "chaos-game",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "system": "branch",
+      "points": 500,
+      "ratio": 0.3,
+      "spread": 0,
+      "w0": 0,
+      "w1": 0,
+      "w2": 0,
+      "palette": "fern",
+      "seed": "ifs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22system%22%3A%22branch%22%2C%22points%22%3A500%2C%22ratio%22%3A0.3%2C%22spread%22%3A0%2C%22w0%22%3A0%2C%22w1%22%3A0%2C%22w2%22%3A0%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22ifs-001%22%7D%7D",
+    "svgSha256": "ee495c603bb32136f19ede3e1541d40f07e75d1488dc133b72ac9b135af347b0",
+    "svgPortableSha256": "ee495c603bb32136f19ede3e1541d40f07e75d1488dc133b72ac9b135af347b0"
+  },
+  {
+    "slug": "chaos-game",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "system": "branch",
+      "points": 20000,
+      "ratio": 0.7,
+      "spread": 80,
+      "w0": 10,
+      "w1": 10,
+      "w2": 10,
+      "palette": "fern",
+      "seed": "ifs-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22system%22%3A%22branch%22%2C%22points%22%3A20000%2C%22ratio%22%3A0.7%2C%22spread%22%3A80%2C%22w0%22%3A10%2C%22w1%22%3A10%2C%22w2%22%3A10%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22ifs-001%22%7D%7D",
+    "svgSha256": "ed8c769a5c41854e705a92e1bf1168588d7c056939dec2b4819c1a0e8ff7df06",
+    "svgPortableSha256": "ed8c769a5c41854e705a92e1bf1168588d7c056939dec2b4819c1a0e8ff7df06"
   }
 ]

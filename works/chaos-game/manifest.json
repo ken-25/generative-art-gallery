@@ -1,0 +1,21 @@
+{
+  "slug": "chaos-game",
+  "title": "選んで縮む点",
+  "description": "いくつかの縮小変換から一つを選び、点に当てはめ続ける。点の行き先が自己相似の形を浮かび上がらせる。",
+  "addedAt": "2026-10-17T15:00:00Z",
+  "tags": [
+    "mathematics",
+    "fractal"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Michael Barnsley（オーストラリア国立大学）",
+      "url": "https://maths.anu.edu.au/people/michael-barnsley"
+    },
+    {
+      "label": "Michael Barnsleyの論文一覧",
+      "url": "https://maths-people.anu.edu.au/~barnsley/pages/publication_list.htm"
+    }
+  ]
+}
