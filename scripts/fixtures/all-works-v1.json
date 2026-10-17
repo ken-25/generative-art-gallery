@@ -1018,5 +1018,59 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A0.6%2C%22cIm%22%3A1.2%2C%22centerX%22%3A2%2C%22centerY%22%3A2%2C%22zoom%22%3A64%2C%22iterations%22%3A256%2C%22palette%22%3A%22dusk%22%7D%7D",
     "svgSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580",
     "svgPortableSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580"
+  },
+  {
+    "slug": "elementary-automata",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "custom",
+      "rule": 30,
+      "init": "single",
+      "density": 0.5,
+      "columns": 201,
+      "generations": 100,
+      "palette": "fern",
+      "seed": "eca-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22custom%22%2C%22rule%22%3A30%2C%22init%22%3A%22single%22%2C%22density%22%3A0.5%2C%22columns%22%3A201%2C%22generations%22%3A100%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22eca-001%22%7D%7D",
+    "svgSha256": "a6cd5d634e46d0a487bec6d55f7dfed33da4bf9176b7059b98b9c92f9d309faa",
+    "svgPortableSha256": "a6cd5d634e46d0a487bec6d55f7dfed33da4bf9176b7059b98b9c92f9d309faa"
+  },
+  {
+    "slug": "elementary-automata",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "custom",
+      "rule": 0,
+      "init": "single",
+      "density": 0.05,
+      "columns": 16,
+      "generations": 16,
+      "palette": "fern",
+      "seed": "eca-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22custom%22%2C%22rule%22%3A0%2C%22init%22%3A%22single%22%2C%22density%22%3A0.05%2C%22columns%22%3A16%2C%22generations%22%3A16%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22eca-001%22%7D%7D",
+    "svgSha256": "82c8f7ab3089be67993cd01f7b35c41f0c55535fc3bfe421ed480758704d18fe",
+    "svgPortableSha256": "82c8f7ab3089be67993cd01f7b35c41f0c55535fc3bfe421ed480758704d18fe"
+  },
+  {
+    "slug": "elementary-automata",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "preset": "custom",
+      "rule": 255,
+      "init": "single",
+      "density": 0.95,
+      "columns": 256,
+      "generations": 256,
+      "palette": "fern",
+      "seed": "eca-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22custom%22%2C%22rule%22%3A255%2C%22init%22%3A%22single%22%2C%22density%22%3A0.95%2C%22columns%22%3A256%2C%22generations%22%3A256%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22eca-001%22%7D%7D",
+    "svgSha256": "f7a94168f4bcc82f42397b14b1d90012c61935d4bef3cecdea7bb1fa8942459d",
+    "svgPortableSha256": "f7a94168f4bcc82f42397b14b1d90012c61935d4bef3cecdea7bb1fa8942459d"
   }
 ]

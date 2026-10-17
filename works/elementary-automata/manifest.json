@@ -1,0 +1,17 @@
+{
+  "slug": "elementary-automata",
+  "title": "三つの隣から",
+  "description": "左・自分・右の3セルだけで次の状態を決める。一行ずつ積み重ねると、三角形や不規則な模様が育つ。",
+  "addedAt": "2026-10-17T17:00:00Z",
+  "tags": [
+    "mathematics",
+    "cellular-automaton"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Stephen Wolfram「Cellular Automata」（1983）ほか研究の紹介",
+      "url": "https://www.stephenwolfram.com/publications/academic/cellular-automata/"
+    }
+  ]
+}
