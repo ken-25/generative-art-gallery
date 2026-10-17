@@ -3,7 +3,15 @@
   "title": "作品名",
   "description": "見える変化をひと言で。",
   "addedAt": "2026-10-16T00:00:00Z",
-  "tags": ["study"],
+  "tags": [
+    "study"
+  ],
   "preview": "preview.webp",
-  "sources": [{"label": "確認した資料名", "url": "https://example.org/replace-with-source"}]
+  "sources": [
+    {
+      "label": "確認した資料名",
+      "url": "https://example.org/replace-with-source"
+    }
+  ],
+  "theme": "randomness"
 }

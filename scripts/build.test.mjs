@@ -1,7 +1,7 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtemp,cp,readFile,writeFile,rm} from 'node:fs/promises';
-import {catalog,escape} from './build.mjs';
+import {catalog,escape,themes,themeFor} from './build.mjs';
 test('catalog ordering, independent additions and validation',async()=>{
  const dir=await mkdtemp(process.cwd()+'/.catalog-test-');
  try {
@@ -12,7 +12,7 @@ test('catalog ordering, independent additions and validation',async()=>{
   }
   assert.deepEqual((await catalog(dir)).map(m=>m.slug),['alpha','beta']);
   const file=`${dir}/alpha/manifest.json`, original=JSON.parse(await readFile(file));
-  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]}]){
+  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]},{theme:42},{theme:''}]){
    await writeFile(file,JSON.stringify({...original,...patch}));await assert.rejects(catalog(dir));
   }
   assert.equal(escape('<script>"&'), '&lt;script&gt;&quot;&amp;');
@@ -33,7 +33,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   }
   for(const slug of ['alpha','beta']){
    await cp('works/lissajous',`${dir}/works/${slug}`,{recursive:true});
-   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
+   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;if(slug==='alpha')delete m.theme;else m.theme='future-theme';m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
   }
   const run=()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'',GOOGLE_TAG_ID:'',SITE_URL:'https://example.org/sub/'}});
   const snapshot=async(folder)=>{const files={};for(const e of await readdir(folder,{withFileTypes:true})){const p=path.join(folder,e.name);if(e.isDirectory())Object.assign(files,await snapshot(p));else files[path.relative(dir,p)]=(await readFile(p)).toString('base64');}return files;};
@@ -43,7 +43,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   for(const slug of ['alpha','beta'])assert.ok((await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8')).includes('<title>&lt;b&gt; &amp; &quot; title $$ $&amp; $` — Generative Art Gallery</title>'));
   for(const slug of ['alpha','beta']){assert.match(html,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp(String(m.number).padStart(3,'0')+' /'));}
   assert.doesNotMatch(html,/<script/);assert.match(html,/fetchpriority="high"/);
-  assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
+  assert.match(html,/id="theme-other"/);assert.match(html,/href="#theme-other"/);assert.equal((html.match(/class="work-card"/g)||[]).length,baseline+2);assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
   execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-TEST000000'}});
   for(const file of ['index.html','about/index.html','works/alpha/index.html','works/beta/index.html']){
    const tagged=await readFile(`${dir}/dist/${file}`,'utf8');assert.equal((tagged.match(/data-google-tag-id=/g)||[]).length,1);assert.match(tagged,/src="\/sub\/assets\/analytics.js"/);assert.match(tagged,/data-google-tag-enabled="true"/);
@@ -58,4 +58,12 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
 
 
  }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('themes keep all twelve existing works and their catalog numbers',async()=>{
+ const works=await catalog(path.resolve('works'));
+ assert.deepEqual(themes.map(t=>t.key),['randomness','lines','structure']);
+ for(const theme of themes)assert.equal(works.slice(0,12).filter(m=>themeFor(m)===theme.key).length,4);
+ assert.equal(themeFor({}),'other');assert.equal(themeFor({theme:'future-theme'}),'other');
+ assert.deepEqual(works.slice(0,12).map(m=>m.slug),['order-and-chance','truchet-tiles','lissajous','recursive-regions','line-trails','octahedral-paths','layered-lines','density-field','hex-transitions','flow-and-silence','nested-hexagons','probability-segments']);
 });

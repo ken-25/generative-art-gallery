@@ -29,3 +29,19 @@ select:focus-visible,textarea:focus-visible{outline:3px solid #5a7459;outline-of
 .control-details .control-group legend{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
 .terms{max-width:800px;margin:48px 0 80px;line-height:2}.terms h2{font-weight:500;font-size:20px}.terms p{color:var(--muted);font-size:12px}
 .png-resolution{display:grid;gap:8px;font-size:11px}.share-options{display:grid;gap:10px;margin-top:12px}.social-links{display:flex;flex-wrap:wrap;gap:8px}.social-links button{flex:1;text-align:center;padding:12px 8px;min-height:44px;border:1px solid var(--line);border-radius:3px;font-size:12px}.share-note{font-size:11px;line-height:1.8;color:var(--muted);margin:0}button:disabled{opacity:.6;cursor:wait}
+/* Themes are plain anchors: all works remain available without JavaScript. */
+.theme-nav{display:flex;flex-wrap:wrap;gap:12px;margin:0 0 48px}.theme-nav a{display:flex;align-items:center;justify-content:space-between;gap:18px;min-height:52px;padding:14px 18px;border:1px solid var(--line);border-radius:3px;text-decoration:none;font-size:13px}.theme-nav a:hover{border-color:var(--green)}.theme-nav span{font-size:10px;color:var(--muted)}
+.theme-section{margin:44px 0 72px;scroll-margin-top:24px}.theme-section h3{font-size:19px;font-weight:500;margin:0}.theme-description{font-size:12px;color:var(--muted);line-height:1.9;margin:18px 0 24px}.card-copy h4{font-size:26px;font-weight:500;letter-spacing:2px;margin:26px 0 18px}
+.operation-hint{font-size:12px;line-height:1.9;margin:0 0 24px;padding:12px;border-left:2px solid var(--green);background:#eeefe7;color:var(--ink)}
+@media(max-width:900px){
+ .studio{display:block;--studio-preview-height:min(38svh,300px);--studio-viewport-top:0px}
+ .studio .paper-area{position:sticky;top:var(--studio-viewport-top);z-index:2;height:var(--studio-preview-height);padding:6px 0 10px;background:var(--ground);margin:0 0 22px}
+ .studio .paper{height:100%;min-height:0;padding:10px;overflow:hidden}
+ .studio .paper svg{width:auto;height:auto;max-width:100%;max-height:100%;object-fit:contain}
+ .studio .caption{display:none}
+ .studio .controls{max-width:500px;margin:0 auto}
+ .studio input,.studio select,.studio textarea,.studio button,.studio summary{scroll-margin-top:calc(var(--studio-preview-height) + 16px);scroll-margin-bottom:16px}
+ .theme-nav{display:grid;grid-template-columns:1fr;margin-bottom:32px}.theme-section{margin:32px 0 48px}.card-copy h4{margin:18px 0}
+}
+
+@media(max-width:900px){.studio .controls input[type=number],.studio .controls input[type=text],.studio .controls select,.studio .controls textarea{font-size:16px}}

@@ -75,3 +75,11 @@ CIとローカル回帰はゲート無効で実行し、IDだけを設定して�
 参照: [Googleタグ](https://developers.google.com/tag-platform/gtagjs)、[Actions Variables](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)、[Open Graph](https://ogp.me/)、[LINE共有](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/)。
 
 PNGの回帰検査では、全12作品の初期設定と変更後の画像を、PNG変換処理を呼ばない独立したSVGラスタ参照と内部ピクセルで比較します。背景を保った空画像が失敗すること、描画が設定に応じて変わること、遅延した変換と操作権限切れ、準備済みFileの再利用・無効化も検査します。
+
+## テーマとスマホの操作画面
+
+一覧は「ゆらぎと密度」「線と流れ」「反復と構造」のアンカーから探せます。JavaScriptで絞り込まず、全作品のリンクをHTMLに残します。manifestの任意themeを使い、未指定・未知の値は「その他の作品」へ自動登録します。作品番号は従来のaddedAt／slugの順のままで、テーマで振り直しません。
+
+幅900px以下の作品画面では、作品を画面高の約38%（上限300px）で上部に残します。操作パネルの内側にスクロール領域を作らず、ページ全体をスクロールします。visualViewportが使える端末では、画面の縮小に合わせてプレビューを小さくし、フォーカスした入力が作品の裏に隠れないよう調整します。保存するSVG／PNGの寸法・生成器は表示サイズから独立しています。
+
+回帰では320×568、375×667、667×375、844×390とキーボード相当の縮小画面で、全作品のプレビュー高・操作位置・はみ出し・二重スクロールを確認します。これはブラウザのモバイルエミュレーションで、実機iPhoneでの検証を意味しません。

@@ -1,0 +1,43 @@
+name: おすすめ設定・配色
+description: この作品の好きな設定や、新しい配色のアイデアを提案する
+title: "[設定・配色] "
+body:
+  - type: markdown
+    attributes:
+      value: 設定や配色の提案フォームです。投稿前に内容を確認してください。
+  - type: input
+    id: artwork
+    attributes:
+      label: 対象作品
+      description: 作品名または作品ページのURL
+    validations:
+      required: true
+  - type: input
+    id: proposal
+    attributes:
+      label: 提案名
+      placeholder: 設定や配色に付けたい名前
+    validations:
+      required: true
+  - type: textarea
+    id: share_url
+    attributes:
+      label: 設定入りURL
+      description: 設定の提案は「この絵を共有」でコピーしたURLを貼ってください。配色だけの提案では省略できます。
+  - type: textarea
+    id: highlight
+    attributes:
+      label: 見どころ
+      description: どの変化や組み合わせが面白いか、短く教えてください。
+    validations:
+      required: true
+  - type: textarea
+    id: colors
+    attributes:
+      label: 色と役割
+      description: 配色の提案では、背景・線・図形などの役割と色（分かればHEX値）を記入してください。
+  - type: textarea
+    id: references
+    attributes:
+      label: 参考元
+      description: 参考にした資料・作品・配色があればURLと参考にした点を記入してください。

@@ -187,6 +187,42 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    }
   }
   console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons; settings change PNG pixels`);
+  // Themed browsing remains usable with JavaScript disabled.
+  const home=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:667}});
+  try{
+   await home.goto(base);const expectedGroups=new Set(catalog.map(m=>['randomness','lines','structure'].includes(m.theme)?m.theme:'other'));assert.equal(await home.locator('.theme-nav a').count(),expectedGroups.size);assert.equal(await home.locator('a.work-card').count(),catalog.length);
+   for(const m of catalog){const card=home.locator(`a.work-card[href="works/${m.slug}/"]`);assert.equal(await card.count(),1);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));}
+   for(const a of await home.locator('.theme-nav a').all()){const href=await a.getAttribute('href');await a.click();assert.equal(new URL(home.url()).hash,href);assert.equal(await home.locator(href).count(),1);}
+   assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  }finally{await home.close();}
+  const touch=await browser.newPage({isMobile:true,hasTouch:true,viewport:{width:320,height:568}});
+  try{
+   for(const [width,height]of [[320,568],[375,667],[667,375],[844,390]]){
+    await touch.setViewportSize({width,height});
+    for(const {slug}of catalog){
+     await touch.goto(base+'works/'+slug+'/');await touch.locator('#art svg').waitFor();
+     for(const selector of ['input[type=range]','input[type=text]','#download-png']){
+      const control=touch.locator(selector).first();if(!await control.count())continue;
+      await control.focus();await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+      if(selector==='input[type=range]'){const before=await control.inputValue();await touch.keyboard.press('ArrowRight');await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.notEqual(await control.inputValue(),before,slug+' keyboard range on short screen');}
+      const layout=await control.evaluate(e=>{
+       const p=document.querySelector('.paper-area').getBoundingClientRect(),r=e.getBoundingClientRect(),vp=window.visualViewport;
+       const nested=[document.querySelector('.studio'),document.querySelector('.controls'),document.querySelector('#settings')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1);
+       return {height:vp?.height||innerHeight,offset:vp?.offsetTop||0,preview:{top:p.top,bottom:p.bottom,height:p.height},control:{top:r.top,bottom:r.bottom,labelTop:e.labels?.length?Math.min(...[...e.labels].map(l=>l.getBoundingClientRect().top)):r.top},overflow:document.documentElement.scrollWidth>innerWidth,nested};
+      });
+      assert.equal(layout.overflow,false,slug+' mobile horizontal overflow');assert.equal(layout.nested,false,slug+' single scroll');assert.ok(layout.preview.height<=layout.height*.4+1,slug+' preview stays under 40%');assert.ok(layout.preview.top>=layout.offset-1,slug+' preview remains visible');assert.ok(layout.control.top>=layout.preview.bottom+8,slug+' focus below preview');assert.ok(layout.control.labelTop>=layout.preview.bottom+8,slug+' label below preview');assert.ok(layout.control.bottom<=layout.offset+layout.height-8,slug+' focus above viewport bottom');
+     }
+    }
+   }
+   // A reduced visual viewport models keyboard space; this is not an iPhone hardware test.
+   await touch.setViewportSize({width:375,height:667});await touch.goto(base+'works/probability-segments/');await touch.locator('#seed').focus();await touch.setViewportSize({width:375,height:320});
+   await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+   const keyboard=await touch.locator('#seed').evaluate(e=>({field:e.getBoundingClientRect().toJSON(),preview:document.querySelector('.paper-area').getBoundingClientRect().toJSON(),height:visualViewport.height}));
+   assert.ok(keyboard.preview.height<=keyboard.height*.4+1);assert.ok(keyboard.field.top>=keyboard.preview.bottom+8);assert.ok(keyboard.field.bottom<=keyboard.height-8);
+   await touch.locator('#seed').fill('mobile-設定');await touch.locator('#seed').press('Tab');assert.equal(await touch.locator('#seed').inputValue(),'mobile-設定');
+   for(const [slug,text]of [['order-and-chance','0'],['truchet-tiles','一つの向き'],['lissajous','90°から0°']]){await touch.goto(base+'works/'+slug+'/');assert.ok((await touch.locator('.operation-hint').textContent()).includes(text));}
+   console.log('PASS no-JS themes, stable numbers; 12 works at 320x568/375x667/667x375/844x390; focus and reduced keyboard viewport');
+  }finally{await touch.close();}
   // Archived URLs also work through the actual browser controls, including inactive weights.
   for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){
    await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();
