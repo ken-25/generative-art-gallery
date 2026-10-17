@@ -742,5 +742,71 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22columns%22%3A40%2C%22rows%22%3A40%2C%22nw%22%3A100%2C%22ne%22%3A100%2C%22se%22%3A100%2C%22sw%22%3A100%2C%22seed%22%3A%22tile-001%22%7D%7D",
     "svgSha256": "e5733da380e61a4afcabfc763cf704cb6c14fee0ef437625973771734e5b50a7",
     "svgPortableSha256": "e5733da380e61a4afcabfc763cf704cb6c14fee0ef437625973771734e5b50a7"
+  },
+  {
+    "slug": "ink-on-water",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 4,
+      "rings": 12,
+      "ink": 22,
+      "water": 18,
+      "drift": 3,
+      "wave": 16,
+      "wavelength": 260,
+      "angle": 20,
+      "tines": 4,
+      "pull": 45,
+      "palette": "dusk",
+      "seed": "ink-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A4%2C%22rings%22%3A12%2C%22ink%22%3A22%2C%22water%22%3A18%2C%22drift%22%3A3%2C%22wave%22%3A16%2C%22wavelength%22%3A260%2C%22angle%22%3A20%2C%22tines%22%3A4%2C%22pull%22%3A45%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22ink-001%22%7D%7D",
+    "svgSha256": "4d377fb118d1e4d75da59fdf5d12d6dcba655a7ebb46a8b63910987198b8a77d",
+    "svgPortableSha256": "4d377fb118d1e4d75da59fdf5d12d6dcba655a7ebb46a8b63910987198b8a77d"
+  },
+  {
+    "slug": "ink-on-water",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 1,
+      "rings": 1,
+      "ink": 4,
+      "water": 0,
+      "drift": 0,
+      "wave": 0,
+      "wavelength": 80,
+      "angle": 0,
+      "tines": 0,
+      "pull": 0,
+      "palette": "dusk",
+      "seed": "ink-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A1%2C%22rings%22%3A1%2C%22ink%22%3A4%2C%22water%22%3A0%2C%22drift%22%3A0%2C%22wave%22%3A0%2C%22wavelength%22%3A80%2C%22angle%22%3A0%2C%22tines%22%3A0%2C%22pull%22%3A0%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22ink-001%22%7D%7D",
+    "svgSha256": "9da842d5b87a24e3df15e14b527b19055a8af43149d5f7be6502f857df382484",
+    "svgPortableSha256": "9da842d5b87a24e3df15e14b527b19055a8af43149d5f7be6502f857df382484"
+  },
+  {
+    "slug": "ink-on-water",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "sites": 5,
+      "rings": 15,
+      "ink": 36,
+      "water": 36,
+      "drift": 12,
+      "wave": 60,
+      "wavelength": 400,
+      "angle": 179,
+      "tines": 9,
+      "pull": 120,
+      "palette": "dusk",
+      "seed": "ink-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A5%2C%22rings%22%3A15%2C%22ink%22%3A36%2C%22water%22%3A36%2C%22drift%22%3A12%2C%22wave%22%3A60%2C%22wavelength%22%3A400%2C%22angle%22%3A179%2C%22tines%22%3A9%2C%22pull%22%3A120%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22ink-001%22%7D%7D",
+    "svgSha256": "68a559b2e83ed7287a59233d134bb9e64a25afbe285ce466c3e993f67a562ab9",
+    "svgPortableSha256": "68a559b2e83ed7287a59233d134bb9e64a25afbe285ce466c3e993f67a562ab9"
   }
 ]

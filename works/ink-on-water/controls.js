@@ -1,0 +1,12 @@
+window.StudyControlDefinitions={
+ sites:{label:'落とす場所の数',help:'墨を落とす中心の数です。場所ごとに同心の輪ができ、後から落とした輪が先の輪を押し広げます。',control:'number',unit:''},
+ rings:{label:'墨の輪の数',help:'1か所に墨と水を交互に落とす回数。増やすほど輪が重なり、外側の輪は細く押し広げられます。',control:'number',unit:''},
+ ink:{label:'墨の滴の半径',help:'1滴の墨が広がる円の半径。大きくすると墨の帯が太くなります。',control:'range',unit:''},
+ water:{label:'水の滴の半径',help:'墨のあいだに落とす水の円の半径。0では水を落とさず、墨の輪が一つの塊になります。',control:'range',unit:''},
+ drift:{label:'滴のずれ',help:'滴を落とす位置を中心からずらす範囲。0では完全な同心円になります。',control:'range',unit:''},
+ wave:{label:'波の振幅',help:'水面を流す向きに揺らす大きさ。0では波で流しません。',control:'range',unit:''},
+ wavelength:{label:'波長',help:'波の山から山までの距離。小さくすると細かく揺れます。',control:'range',unit:'',active:s=>s.wave>0},
+ angle:{label:'流す向き',help:'波と櫛で墨を流す向き。0°で横、90°で縦に流れます。',control:'range',unit:'°'},
+ tines:{label:'櫛の本数',help:'流す向きに沿って水面を引く線の数。隣どうしは逆向きに引きます。0では引きません。',control:'number',unit:''},
+ pull:{label:'櫛で引く距離',help:'櫛の線上で墨が動く距離。線から離れるほど動きは小さくなります。',control:'range',unit:'',active:s=>s.tines>0}
+};
