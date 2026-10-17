@@ -1,0 +1,21 @@
+{
+  "slug": "flocking-trails",
+  "title": "群れの軌跡",
+  "description": "離れる、そろえる、寄る。三つの規則だけで動く粒子が、群れの流れを線に残す。",
+  "addedAt": "2026-10-17T19:00:00Z",
+  "tags": [
+    "simulation",
+    "emergence"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Craig Reynolds「Boids」",
+      "url": "https://www.red3d.com/cwr/boids/"
+    },
+    {
+      "label": "Craig Reynolds「Flocks, Herds, and Schools: A Distributed Behavioral Model」（1987）",
+      "url": "https://www.red3d.com/cwr/papers/1987/boids.html"
+    }
+  ]
+}

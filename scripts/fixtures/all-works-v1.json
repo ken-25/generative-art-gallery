@@ -1126,5 +1126,59 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22preset%22%3A%22coral%22%2C%22feed%22%3A0.1%2C%22kill%22%3A0.07%2C%22seeds%22%3A12%2C%22iterations%22%3A4000%2C%22threshold%22%3A0.5%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22gs-001%22%7D%7D",
     "svgSha256": "90d457b50a773bef775c1830fe0db298dec103697dec3c6b44913d4c7eaaf806",
     "svgPortableSha256": "90d457b50a773bef775c1830fe0db298dec103697dec3c6b44913d4c7eaaf806"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 60,
+      "separation": 1.5,
+      "alignment": 1,
+      "cohesion": 0.8,
+      "radius": 50,
+      "steps": 320,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A60%2C%22separation%22%3A1.5%2C%22alignment%22%3A1%2C%22cohesion%22%3A0.8%2C%22radius%22%3A50%2C%22steps%22%3A320%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "1235360d96b6d97daedaa4f22968c473b6b96a83d1ff579889df82db7f4b8e89",
+    "svgPortableSha256": "1235360d96b6d97daedaa4f22968c473b6b96a83d1ff579889df82db7f4b8e89"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 1,
+      "separation": 0,
+      "alignment": 0,
+      "cohesion": 0,
+      "radius": 10,
+      "steps": 20,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A1%2C%22separation%22%3A0%2C%22alignment%22%3A0%2C%22cohesion%22%3A0%2C%22radius%22%3A10%2C%22steps%22%3A20%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "246672644d08527a1ff63ad9840bda05d09a4dbd890fe09ebebb8286350ee6e2",
+    "svgPortableSha256": "246672644d08527a1ff63ad9840bda05d09a4dbd890fe09ebebb8286350ee6e2"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 120,
+      "separation": 3,
+      "alignment": 3,
+      "cohesion": 3,
+      "radius": 120,
+      "steps": 500,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A120%2C%22separation%22%3A3%2C%22alignment%22%3A3%2C%22cohesion%22%3A3%2C%22radius%22%3A120%2C%22steps%22%3A500%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574",
+    "svgPortableSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574"
   }
 ]
