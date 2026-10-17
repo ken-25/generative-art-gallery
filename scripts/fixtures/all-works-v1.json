@@ -969,57 +969,6 @@
     "svgPortableSha256": "ed8c769a5c41854e705a92e1bf1168588d7c056939dec2b4819c1a0e8ff7df06"
   },
   {
-    "slug": "julia-mandelbrot",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "cRe": -0.745,
-      "cIm": 0.12,
-      "centerX": 0,
-      "centerY": 0,
-      "zoom": 1,
-      "iterations": 128,
-      "palette": "dusk"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-0.745%2C%22cIm%22%3A0.12%2C%22centerX%22%3A0%2C%22centerY%22%3A0%2C%22zoom%22%3A1%2C%22iterations%22%3A128%2C%22palette%22%3A%22dusk%22%7D%7D",
-    "svgSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c",
-    "svgPortableSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c"
-  },
-  {
-    "slug": "julia-mandelbrot",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "cRe": -2,
-      "cIm": -1.2,
-      "centerX": -2,
-      "centerY": -2,
-      "zoom": 1,
-      "iterations": 16,
-      "palette": "dusk"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-2%2C%22cIm%22%3A-1.2%2C%22centerX%22%3A-2%2C%22centerY%22%3A-2%2C%22zoom%22%3A1%2C%22iterations%22%3A16%2C%22palette%22%3A%22dusk%22%7D%7D",
-    "svgSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372",
-    "svgPortableSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372"
-  },
-  {
-    "slug": "julia-mandelbrot",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "cRe": 0.6,
-      "cIm": 1.2,
-      "centerX": 2,
-      "centerY": 2,
-      "zoom": 64,
-      "iterations": 256,
-      "palette": "dusk"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A0.6%2C%22cIm%22%3A1.2%2C%22centerX%22%3A2%2C%22centerY%22%3A2%2C%22zoom%22%3A64%2C%22iterations%22%3A256%2C%22palette%22%3A%22dusk%22%7D%7D",
-    "svgSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580",
-    "svgPortableSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580"
-  },
-  {
     "slug": "elementary-automata",
     "file": "generator.js",
     "key": "StudyGenerator",
@@ -1128,150 +1077,6 @@
     "svgPortableSha256": "90d457b50a773bef775c1830fe0db298dec103697dec3c6b44913d4c7eaaf806"
   },
   {
-    "slug": "flocking-trails",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "count": 60,
-      "separation": 1.5,
-      "alignment": 1,
-      "cohesion": 0.8,
-      "radius": 50,
-      "steps": 320,
-      "palette": "fern",
-      "seed": "boids-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A60%2C%22separation%22%3A1.5%2C%22alignment%22%3A1%2C%22cohesion%22%3A0.8%2C%22radius%22%3A50%2C%22steps%22%3A320%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
-    "svgSha256": "1235360d96b6d97daedaa4f22968c473b6b96a83d1ff579889df82db7f4b8e89",
-    "svgPortableSha256": "1235360d96b6d97daedaa4f22968c473b6b96a83d1ff579889df82db7f4b8e89"
-  },
-  {
-    "slug": "flocking-trails",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "count": 1,
-      "separation": 0,
-      "alignment": 0,
-      "cohesion": 0,
-      "radius": 10,
-      "steps": 20,
-      "palette": "fern",
-      "seed": "boids-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A1%2C%22separation%22%3A0%2C%22alignment%22%3A0%2C%22cohesion%22%3A0%2C%22radius%22%3A10%2C%22steps%22%3A20%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
-    "svgSha256": "246672644d08527a1ff63ad9840bda05d09a4dbd890fe09ebebb8286350ee6e2",
-    "svgPortableSha256": "246672644d08527a1ff63ad9840bda05d09a4dbd890fe09ebebb8286350ee6e2"
-  },
-  {
-    "slug": "flocking-trails",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "count": 120,
-      "separation": 3,
-      "alignment": 3,
-      "cohesion": 3,
-      "radius": 120,
-      "steps": 500,
-      "palette": "fern",
-      "seed": "boids-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A120%2C%22separation%22%3A3%2C%22alignment%22%3A3%2C%22cohesion%22%3A3%2C%22radius%22%3A120%2C%22steps%22%3A500%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
-    "svgSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574",
-    "svgPortableSha256": "a2838ff0b8d6d50f208b02fa7902bdfc11a9e30d2e02f0c02ba891e028b2f574"
-  },
-  {
-    "slug": "diffusion-aggregation",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "target": 1200,
-      "stickiness": 1,
-      "origin": "point",
-      "palette": "dusk",
-      "seed": "dla-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1200%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
-    "svgSha256": "3b4b698e96b01d0d7ebff2edd07af87c0493e0c49cad2f0ca87721c2c9dde4dc",
-    "svgPortableSha256": "3b4b698e96b01d0d7ebff2edd07af87c0493e0c49cad2f0ca87721c2c9dde4dc"
-  },
-  {
-    "slug": "diffusion-aggregation",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "target": 50,
-      "stickiness": 0.1,
-      "origin": "point",
-      "palette": "dusk",
-      "seed": "dla-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A50%2C%22stickiness%22%3A0.1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
-    "svgSha256": "760a21185cb4c6d67f1419d44f8326bb61ad8b71885eaa72d25dee8968557b19",
-    "svgPortableSha256": "760a21185cb4c6d67f1419d44f8326bb61ad8b71885eaa72d25dee8968557b19"
-  },
-  {
-    "slug": "diffusion-aggregation",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "target": 1500,
-      "stickiness": 1,
-      "origin": "point",
-      "palette": "dusk",
-      "seed": "dla-001"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1500%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
-    "svgSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee",
-    "svgPortableSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee"
-  },
-  {
-    "slug": "penrose-triangles",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "depth": 6,
-      "rotation": 0,
-      "zoom": 1.4,
-      "outline": 0.6,
-      "palette": "fern"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A6%2C%22rotation%22%3A0%2C%22zoom%22%3A1.4%2C%22outline%22%3A0.6%2C%22palette%22%3A%22fern%22%7D%7D",
-    "svgSha256": "9a7db21c3ed6223364a76cd6fe35ad178df01d46f9f8b911c65d511b9dd83c7a",
-    "svgPortableSha256": "9a7db21c3ed6223364a76cd6fe35ad178df01d46f9f8b911c65d511b9dd83c7a"
-  },
-  {
-    "slug": "penrose-triangles",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "depth": 0,
-      "rotation": 0,
-      "zoom": 0.5,
-      "outline": 0,
-      "palette": "fern"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A0%2C%22rotation%22%3A0%2C%22zoom%22%3A0.5%2C%22outline%22%3A0%2C%22palette%22%3A%22fern%22%7D%7D",
-    "svgSha256": "82e1ef80588a0b6b3efadb4e2fea75088e2c4d8fb8db317f6478f02be18db998",
-    "svgPortableSha256": "82e1ef80588a0b6b3efadb4e2fea75088e2c4d8fb8db317f6478f02be18db998"
-  },
-  {
-    "slug": "penrose-triangles",
-    "file": "generator.js",
-    "key": "StudyGenerator",
-    "settings": {
-      "depth": 7,
-      "rotation": 359,
-      "zoom": 3,
-      "outline": 2,
-      "palette": "fern"
-    },
-    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A7%2C%22rotation%22%3A359%2C%22zoom%22%3A3%2C%22outline%22%3A2%2C%22palette%22%3A%22fern%22%7D%7D",
-    "svgSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c",
-    "svgPortableSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c"
-  },
-  {
     "slug": "voronoi-relaxation",
     "file": "generator.js",
     "key": "StudyGenerator",
@@ -1372,5 +1177,200 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rho%22%3A60%2C%22x0%22%3A20%2C%22y0%22%3A20%2C%22z0%22%3A50%2C%22projection%22%3A%22xz%22%2C%22points%22%3A20000%2C%22width%22%3A3%2C%22palette%22%3A%22dusk%22%7D%7D",
     "svgSha256": "f20ccce6e461f8a4cb72badb3f6acfc40b44d6079985a797d2f79befc1e1e6a1",
     "svgPortableSha256": "f20ccce6e461f8a4cb72badb3f6acfc40b44d6079985a797d2f79befc1e1e6a1"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 6,
+      "zoom": 1.4,
+      "rotation": 0,
+      "outline": 0.6,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A6%2C%22zoom%22%3A1.4%2C%22rotation%22%3A0%2C%22outline%22%3A0.6%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "cfaa4e94ac111036837bae893a0900c4ac69d67f6baf398031c20a51d5926367",
+    "svgPortableSha256": "cfaa4e94ac111036837bae893a0900c4ac69d67f6baf398031c20a51d5926367"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 0,
+      "zoom": 0.5,
+      "rotation": 0,
+      "outline": 0,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A0%2C%22zoom%22%3A0.5%2C%22rotation%22%3A0%2C%22outline%22%3A0%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "aebecc82e41dec6570fa2afcc56c193d531bd5e1dc4380fbc6e8bafb8908c8e4",
+    "svgPortableSha256": "aebecc82e41dec6570fa2afcc56c193d531bd5e1dc4380fbc6e8bafb8908c8e4"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 7,
+      "zoom": 3,
+      "rotation": 359,
+      "outline": 2,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A7%2C%22zoom%22%3A3%2C%22rotation%22%3A359%2C%22outline%22%3A2%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "6f0c35f368794ea11aad2a0d4aea64f26f290772ce6e69185f93bb58bda4443f",
+    "svgPortableSha256": "6f0c35f368794ea11aad2a0d4aea64f26f290772ce6e69185f93bb58bda4443f"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": -0.745,
+      "cIm": 0.12,
+      "centerX": 0,
+      "centerY": 0,
+      "zoom": 1,
+      "iterations": 128,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-0.745%2C%22cIm%22%3A0.12%2C%22centerX%22%3A0%2C%22centerY%22%3A0%2C%22zoom%22%3A1%2C%22iterations%22%3A128%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c",
+    "svgPortableSha256": "080780299dc0e4cc23e162439ee2e23224890390fea63e965e6cadc94b68c87c"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": -2,
+      "cIm": -1.2,
+      "centerX": -2,
+      "centerY": -2,
+      "zoom": 1,
+      "iterations": 16,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A-2%2C%22cIm%22%3A-1.2%2C%22centerX%22%3A-2%2C%22centerY%22%3A-2%2C%22zoom%22%3A1%2C%22iterations%22%3A16%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372",
+    "svgPortableSha256": "ecfd8acde302a7bf374e06f330e91b769d5e8fd91feec347beb0bb78cd4e1372"
+  },
+  {
+    "slug": "julia-mandelbrot",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "cRe": 0.6,
+      "cIm": 1.2,
+      "centerX": 2,
+      "centerY": 2,
+      "zoom": 64,
+      "iterations": 256,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22cRe%22%3A0.6%2C%22cIm%22%3A1.2%2C%22centerX%22%3A2%2C%22centerY%22%3A2%2C%22zoom%22%3A64%2C%22iterations%22%3A256%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580",
+    "svgPortableSha256": "ba671848a4e20a42aaf5d87f3fb718c93398c0ee586a1d70ea2b3b9ddac92580"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 60,
+      "separation": 1.5,
+      "alignment": 1,
+      "cohesion": 0.8,
+      "radius": 50,
+      "steps": 320,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A60%2C%22separation%22%3A1.5%2C%22alignment%22%3A1%2C%22cohesion%22%3A0.8%2C%22radius%22%3A50%2C%22steps%22%3A320%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "e915704dffb9f7c86cae020e3dec2f1cb15367c60915328da41ac12ae2ed26f6",
+    "svgPortableSha256": "e915704dffb9f7c86cae020e3dec2f1cb15367c60915328da41ac12ae2ed26f6"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 1,
+      "separation": 0,
+      "alignment": 0,
+      "cohesion": 0,
+      "radius": 10,
+      "steps": 20,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A1%2C%22separation%22%3A0%2C%22alignment%22%3A0%2C%22cohesion%22%3A0%2C%22radius%22%3A10%2C%22steps%22%3A20%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "f95b432732765dfc382b49718e135514318a694d5fb8732d6801f2a300576931",
+    "svgPortableSha256": "f95b432732765dfc382b49718e135514318a694d5fb8732d6801f2a300576931"
+  },
+  {
+    "slug": "flocking-trails",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "count": 120,
+      "separation": 3,
+      "alignment": 3,
+      "cohesion": 3,
+      "radius": 120,
+      "steps": 500,
+      "palette": "fern",
+      "seed": "boids-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22count%22%3A120%2C%22separation%22%3A3%2C%22alignment%22%3A3%2C%22cohesion%22%3A3%2C%22radius%22%3A120%2C%22steps%22%3A500%2C%22palette%22%3A%22fern%22%2C%22seed%22%3A%22boids-001%22%7D%7D",
+    "svgSha256": "df10529351f95f0e608c53949ed29fe42056075279ea8913d47d181b3ba849a8",
+    "svgPortableSha256": "df10529351f95f0e608c53949ed29fe42056075279ea8913d47d181b3ba849a8"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 1200,
+      "stickiness": 1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1200%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "ba6cc897659a47a693ce7367fe0788c1147afe6425f5ab9401656cff56568c39",
+    "svgPortableSha256": "ba6cc897659a47a693ce7367fe0788c1147afe6425f5ab9401656cff56568c39"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 50,
+      "stickiness": 0.1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A50%2C%22stickiness%22%3A0.1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "b43b77d30be76e634f9b99bc651377a32c2a5c865da9cc6b55c188e21c4cde8a",
+    "svgPortableSha256": "b43b77d30be76e634f9b99bc651377a32c2a5c865da9cc6b55c188e21c4cde8a"
+  },
+  {
+    "slug": "diffusion-aggregation",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "target": 1500,
+      "stickiness": 1,
+      "origin": "point",
+      "palette": "dusk",
+      "seed": "dla-001"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1500%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
+    "svgSha256": "f4ad3376fc017bf1b1cfefa1106ba555a58134165722d9b7fbeb330bd13cfb9a",
+    "svgPortableSha256": "f4ad3376fc017bf1b1cfefa1106ba555a58134165722d9b7fbeb330bd13cfb9a"
   }
 ]

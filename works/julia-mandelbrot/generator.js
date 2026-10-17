@@ -4,7 +4,7 @@
  const schema={cRe:{label:'cの実部',min:-2,max:0.6,step:0.005},cIm:{label:'cの虚部',min:-1.2,max:1.2,step:0.005},centerX:{label:'表示中心の実部',min:-2,max:2,step:0.01},centerY:{label:'表示中心の虚部',min:-2,max:2,step:0.01},zoom:{label:'拡大率',min:1,max:64,step:0.5},iterations:{label:'最大反復数',min:16,max:256,step:8},palette:C.palette};
  // Two square panes of N×N cells: the parameter plane (fixed overview) and the Julia set of the chosen c.
  const N=200,CELL=2,PANES=[[40,100],[460,100]],MANDEL={x:-0.6,y:0,half:1.5},JULIA_HALF=1.6,LEVELS=10,ROWS=8;
- const escapeRadius=(re,im)=>Math.max(2,Math.hypot(re,im));
+ const escapeRadius=(re,im)=>Math.max(2,Math.sqrt(re*re+im*im));
  // Iterate z -> z^2 + c and return the step at which |z| exceeds R, or 0 if it stays bounded for max steps.
  function escape(zr,zi,cr,ci,R2,max){for(let n=1;n<=max;n++){const t=zr*zr-zi*zi+cr;zi=2*zr*zi+ci;zr=t;if(zr*zr+zi*zi>R2)return n;}return 0;}
  const coordinate=(view,i)=>view.x-view.half+(i+0.5)*2*view.half/N;

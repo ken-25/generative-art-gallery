@@ -14,7 +14,7 @@ test('stopping is reproducible from the seed and the step budget, and partial re
  assert.notDeepEqual(G.geometry({...G.defaults,seed:'other'}).cells,a.cells);assert.match(G.note(G.defaults),/目標の1200粒子がすべて付着/);
  const budget={...G.defaults,target:1500,stickiness:0.1},g=G.geometry(budget);
  assert.equal(g.reason,'budget');assert.equal(g.steps,4000000);assert(g.attached<1500);assert.equal(G.note(budget),`計算量の上限に達したため、${g.attached}粒子（目標1500）で止めています。`);
- const edge={...G.defaults,seed:'c'},e=G.geometry(edge);assert.equal(e.reason,'edge');assert.match(G.note(edge),new RegExp(`${e.attached}粒子（目標1200）`));
+ const edge={...G.defaults,seed:'edge-0'},e=G.geometry(edge);assert.equal(e.reason,'edge');assert.match(G.note(edge),new RegExp(`${e.attached}粒子（目標1200）`));
  // Chunked and direct runs agree.
  const s={...G.defaults,target:300,seed:'chunk'},direct=G.geometry(s).cells;G.geometry(G.defaults);
  const job=G.task(s);let n=1;while(!job.step())n++;assert(n>1);assert.equal(G.task(s),null);assert.deepEqual(G.geometry(s).cells,direct);

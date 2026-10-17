@@ -1,7 +1,7 @@
 (() => {
  'use strict';const C=typeof module!=='undefined'?require('../../assets/study-core.js'):StudyCore;
- const defaults={depth:6,rotation:0,zoom:1.4,outline:0.6,palette:'fern'};
- const schema={depth:{label:'置換の深さ',min:0,max:7,step:1},rotation:{label:'回転',min:0,max:359,step:1},zoom:{label:'表示範囲',min:0.5,max:3,step:0.05},outline:{label:'輪郭線の太さ',min:0,max:2,step:0.1},palette:C.palette};
+ const defaults={depth:6,zoom:1.4,rotation:0,outline:0.6,palette:'fern'};
+ const schema={depth:{label:'置換の深さ',min:0,max:7,step:1},zoom:{label:'表示範囲',min:0.5,max:3,step:0.05},rotation:{label:'回転',min:0,max:359,step:1},outline:{label:'輪郭線の太さ',min:0,max:2,step:0.1},palette:C.palette};
  const PHI=(1+Math.sqrt(5))/2,RADIUS=600;
  // Golden triangles as [type, A, B, C] with apex A: type 0 is acute (36° at A), type 1 is obtuse (108° at A).
  const lerp=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t];

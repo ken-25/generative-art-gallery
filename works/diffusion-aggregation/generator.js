@@ -5,20 +5,22 @@
  // A 240×160 lattice; walkers start on a circle just outside the cluster and are dropped if they stray far.
  const W=240,H=160,CELL=3.75,CX=120,CY=80,LAUNCH_GAP=5,KILL_GAP=40,WALK_LIMIT=20000,STEP_BUDGET=4000000,CHUNK=200000,BANDS=6;
  const DIRS=[[1,0],[-1,0],[0,1],[0,-1]];
+ // Only correctly rounded operations (no Math.hypot or trigonometry), so every engine walks the same way.
+ const dist=(x,y)=>Math.sqrt(x*x+y*y);
  function* simulate(s){
   const rng=C.rng(s.seed),grid=new Int32Array(W*H).fill(-1),cells=[];let radius=0;
-  const occupy=(x,y)=>{grid[y*W+x]=cells.length;cells.push([x,y]);radius=Math.max(radius,Math.hypot(x-CX,y-CY));};
+  const occupy=(x,y)=>{grid[y*W+x]=cells.length;cells.push([x,y]);radius=Math.max(radius,dist(x-CX,y-CY));};
   if(s.origin==='line')for(let x=CX-8;x<=CX+8;x++)occupy(x,CY);else occupy(CX,CY);
   const seeds=cells.length,touching=(x,y)=>DIRS.some(([dx,dy])=>{const nx=x+dx,ny=y+dy;return nx>=0&&ny>=0&&nx<W&&ny<H&&grid[ny*W+nx]>=0;});
   let steps=0,relaunches=0,reason='target',since=0;
   while(cells.length-seeds<s.target){
    const launch=radius+LAUNCH_GAP;
    if(CX-launch<1||CY-launch<1||CX+launch>W-2||CY+launch>H-2){reason='edge';break;}
-   const a=rng()*2*Math.PI;let x=Math.round(CX+launch*Math.cos(a)),y=Math.round(CY+launch*Math.sin(a)),stuck=false;
+   const [ux,uy]=C.direction(rng);let x=Math.round(CX+launch*ux),y=Math.round(CY+launch*uy),stuck=false;
    for(let walk=0;walk<WALK_LIMIT&&steps<STEP_BUDGET;walk++){
     if(touching(x,y)&&rng()<s.stickiness){stuck=true;break;}
     const [dx,dy]=DIRS[Math.floor(rng()*4)],nx=x+dx,ny=y+dy;steps++;since++;
-    if(nx<0||ny<0||nx>=W||ny>=H||Math.hypot(nx-CX,ny-CY)>launch+KILL_GAP)break;
+    if(nx<0||ny<0||nx>=W||ny>=H||dist(nx-CX,ny-CY)>launch+KILL_GAP)break;
     if(grid[ny*W+nx]<0){x=nx;y=ny;}
    }
    if(stuck)occupy(x,y);else relaunches++;

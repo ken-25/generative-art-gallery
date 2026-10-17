@@ -1,7 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),G=require('./generator.js'),share=require('../../assets/share.js');
 test('every boid updates from the previous state at the same time',()=>{
  // Two boids with alignment only: each turns toward the other's previous velocity, not the other's new one.
- const s={...G.defaults,count:2,separation:0,cohesion:0,alignment:1,radius:120,steps:20,seed:'pair-27'},g=G.geometry(s);
+ const s={...G.defaults,count:2,separation:0,cohesion:0,alignment:1,radius:120,steps:20,seed:'pair-3'},g=G.geometry(s);
  const [a,b]=g.initial,lim=(x,y,m)=>{const n=Math.hypot(x,y);return n>m?[x*m/n,y*m/n]:[x,y];};
  const wrap=(d,size)=>d-size*Math.round(d/size);
  if(Math.hypot(wrap(b.x-a.x,900),wrap(b.y-a.y,600))<=120){
