@@ -35,7 +35,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
    await cp('works/lissajous',`${dir}/works/${slug}`,{recursive:true});
    const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
   }
-  const run=()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ID:'',SITE_URL:'https://example.org/sub/'}});
+  const run=()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'',GOOGLE_TAG_ID:'',SITE_URL:'https://example.org/sub/'}});
   const snapshot=async(folder)=>{const files={};for(const e of await readdir(folder,{withFileTypes:true})){const p=path.join(folder,e.name);if(e.isDirectory())Object.assign(files,await snapshot(p));else files[path.relative(dir,p)]=(await readFile(p)).toString('base64');}return files;};
   run();const first=await snapshot(`${dir}/dist`);run();assert.deepEqual(await snapshot(`${dir}/dist`),first);
   const html=await readFile(`${dir}/dist/index.html`,'utf8'),map=await readFile(`${dir}/dist/sitemap.xml`,'utf8');
@@ -44,11 +44,18 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   for(const slug of ['alpha','beta']){assert.match(html,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp(String(m.number).padStart(3,'0')+' /'));}
   assert.doesNotMatch(html,/<script/);assert.match(html,/fetchpriority="high"/);
   assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
-  execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ID:'G-TEST000000'}});
+  execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-TEST000000'}});
   for(const file of ['index.html','about/index.html','works/alpha/index.html','works/beta/index.html']){
-   const tagged=await readFile(`${dir}/dist/${file}`,'utf8');assert.equal((tagged.match(/data-google-tag-id=/g)||[]).length,1);assert.match(tagged,/src="\/sub\/assets\/analytics.js"/);
+   const tagged=await readFile(`${dir}/dist/${file}`,'utf8');assert.equal((tagged.match(/data-google-tag-id=/g)||[]).length,1);assert.match(tagged,/src="\/sub\/assets\/analytics.js"/);assert.match(tagged,/data-google-tag-enabled="true"/);
   }
-  assert.throws(()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ID:'G-<script>'},stdio:'pipe'}));
+  assert.throws(()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-<script>'},stdio:'pipe'}));
+  assert.throws(()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:''},stdio:'pipe'}));
+  for(const enabled of ['', 'false', 'TRUE', '1']){
+   execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:enabled,GOOGLE_TAG_ID:'G-TEST000000'}});
+   await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
+   for(const file of ['index.html','about/index.html',...list.map(m=>`works/${m.slug}/index.html`)])assert.doesNotMatch(await readFile(`${dir}/dist/${file}`,'utf8'),/data-google-tag-|assets\/analytics.js|googletagmanager/);
+  }
+
 
  }finally{await rm(dir,{recursive:true,force:true});}
 });

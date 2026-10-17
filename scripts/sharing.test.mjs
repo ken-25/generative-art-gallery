@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import vm from 'node:vm';
-import {tagId,seo,imageInfo} from './build.mjs';
+import {tagId,analyticsTag,seo,imageInfo} from './build.mjs';
 const require=createRequire(import.meta.url),share=require('../assets/share.js');
 test('PNG dimensions preserve ratio and enforce pixel/edge bounds',()=>{
  for(const [w,h]of [[900,600],[600,600],[300,1700],[1e6,1e6]])for(const edge of [1600,2400,1e6]){
@@ -26,11 +26,24 @@ test('tag validation and static cards use escaped text and absolute previews',as
 });
 test('mock Google tag initializes once and never reads or sends settings/seed',async()=>{
  const code=await readFile('assets/analytics.js','utf8'),scripts=[];
- const document={title:'固定の作品名',querySelector:selector=>selector==='script[data-google-tag-id]'?{dataset:{googleTagId:'G-TEST000000'}}:{href:'https://example.org/sub/work/?s=SECRET_SEED#art=SECRET_SEED'},createElement:()=>({}),head:{append:s=>scripts.push(s)}};
+ const document={title:'固定の作品名',querySelector:selector=>selector==='script[data-google-tag-id]'?{dataset:{googleTagId:'G-TEST000000',googleTagEnabled:'true'}}:{href:'https://example.org/sub/work/?s=SECRET_SEED#art=SECRET_SEED'},createElement:()=>({}),head:{append:s=>scripts.push(s)}};
  const c={window:{},document,URL,Date};vm.createContext(c);vm.runInContext(code,c);vm.runInContext(code,c);
  assert.equal(scripts.length,1);assert.equal(scripts[0].referrerPolicy,'no-referrer');assert.equal(c.window.dataLayer.filter(x=>x[0]==='config').length,1);assert.equal(c.window.dataLayer.filter(x=>x[1]==='page_view').length,1);
  c.window.GalleryAnalytics.track('share_social','line',{seed:'SECRET_SEED'});c.window.GalleryAnalytics.track('bad','SECRET_SEED');
  const events=c.window.dataLayer.filter(x=>x[0]==='event');assert.equal(events.length,2);assert.equal(events[1][2].method,'line');assert.doesNotMatch(JSON.stringify(c.window.dataLayer),/SECRET_SEED|#art|\?s=/);
  assert.equal(c.window.dataLayer.find(x=>x[0]==='config')[2].send_page_view,false);
  const disabled={window:{},document:{...document,querySelector:()=>null},URL,Date};vm.createContext(disabled);vm.runInContext(code,disabled);assert.equal(disabled.window.GalleryAnalytics,undefined);assert.equal(scripts.length,1);
+});
+
+test('analytics requires an explicit true gate as well as a valid ID',async()=>{
+ for(const enabled of [undefined,'','false','TRUE','1','yes']){
+  assert.equal(analyticsTag(enabled,'G-TEST000000'),'');assert.equal(analyticsTag(enabled,'invalid ID'),'');
+ }
+ assert.equal(analyticsTag('true','G-TEST000000'),'G-TEST000000');
+ assert.throws(()=>analyticsTag('true',''));assert.throws(()=>analyticsTag('true','invalid ID'));
+ const code=await readFile('assets/analytics.js','utf8');
+ for(const enabled of [undefined,'false','TRUE','1']){
+  const c={window:{},document:{querySelector:()=>({dataset:{googleTagId:'G-TEST000000',googleTagEnabled:enabled}})},URL,Date};
+  vm.createContext(c);vm.runInContext(code,c);assert.equal(c.window.GalleryAnalytics,undefined);assert.equal(c.window.dataLayer,undefined);
+ }
 });

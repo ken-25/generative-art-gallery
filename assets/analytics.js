@@ -1,9 +1,9 @@
-/* Loaded only by builds with a validated public tag ID. No settings/seed are read. */
+/* Loaded only by explicitly enabled builds with a validated public tag ID. No settings/seed are read. */
 (() => {
  'use strict';
  if(window.GalleryAnalytics)return;
  const script=document.querySelector('script[data-google-tag-id]'),id=script?.dataset.googleTagId;
- if(!/^(G|GT)-[A-Z0-9]{6,20}$/.test(id||''))return;
+ if(script?.dataset.googleTagEnabled!=='true'||!/^(G|GT)-[A-Z0-9]{6,20}$/.test(id||''))return;
  const canonical=document.querySelector('link[rel=canonical]')?.href;
  if(!canonical)return;
  const clean=new URL(canonical);clean.search='';clean.hash='';

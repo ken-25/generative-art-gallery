@@ -25,6 +25,7 @@ jobs:
       - run: npm test
       - run: npm run build
         env:
+          GOOGLE_TAG_ENABLED: ${{ vars.GOOGLE_TAG_ENABLED }}
           GOOGLE_TAG_ID: ${{ vars.GOOGLE_TAG_ID }}
           SITE_URL: https://ken-25.github.io/generative-art-gallery/
       - uses: actions/upload-pages-artifact@v4

@@ -13,7 +13,7 @@ npm run build
 python3 -m http.server 8000 --directory dist
 ```
 
-`http://localhost:8000/` を開きます。配信するのは `dist/` です。計測未設定時はHTML/CSS/JavaScriptだけで動き、外部API・CDN・フォントは使いません。計測設定時のみGoogleの外部スクリプトを読み込みます。Playwrightは開発時のブラウザ検証用です。
+`http://localhost:8000/` を開きます。配信するのは `dist/` です。計測が既定オフの間はHTML/CSS/JavaScriptだけで動き、外部API・CDN・フォントは使いません。計測を明示的に有効化した場合のみGoogleの外部スクリプトを読み込みます。Playwrightは開発時のブラウザ検証用です。
 
 ## 操作と共有
 
@@ -64,13 +64,13 @@ npm run test:browser
 
 ## 任意のGoogleタグ
 
-仮の推奨変数名は `GOOGLE_TAG_ID` です。リポジトリまたは既存の `github-pages` Environmentの **Actions Variables** からPagesのbuild jobへ渡します。buildにも既存Environmentを指定しており、Environmentの保護ルールがある場合はbuildにも適用されます。変数・Secrets・権限の作成や変更を行うコードはありません。
+計測は既定で無効です。仮の推奨変数名は `GOOGLE_TAG_ID` と `GOOGLE_TAG_ENABLED` です。リポジトリまたは既存の `github-pages` Environmentの **Actions Variables** からPagesのbuild jobへ渡します。buildにも既存Environmentを指定しており、Environmentの保護ルールがある場合はbuildにも適用されます。変数・Secrets・権限の作成や変更を行うコードはありません。
 
-空欄では計測スクリプトも外部Googleタグも出力しません。非空の値は `G-`／`GT-` と英大文字・数字の形式を検証し、不正なら値を表示せずビルドを失敗させます。タグIDはビルド後のHTMLに含まれる公開情報であり、秘密値を指定しないでください。変数名・IDの確認と設定はオーナーが行い、変更後は再ビルドします。
+`GOOGLE_TAG_ID`だけを指定しても有効になりません。`GOOGLE_TAG_ENABLED` が文字列 `true` と完全一致する場合に限り有効化します。未設定・空欄・`false`・`TRUE`・`1`などは無効で、IDが存在してもHTMLの計測タグと配信物の計測ファイルを除外します。ゲート無効時はIDの内容も使用しないため、PNG・共有だけを先行公開できます。有効化時のIDは `G-`／`GT-` と英大文字・数字の形式を検証し、不正または未設定なら値を表示せずビルドを失敗させます。タグIDはビルド後のHTMLに含まれる公開情報であり、秘密値を指定しないでください。変数名・IDの確認と設定はオーナーが行い、変更後は再ビルドします。
 
-計測するのは固定URLのページ閲覧と保存・共有の操作種別です。コードはURLのquery／fragment、調整値、seed、コピーしたURL、入力内容をイベントに渡さず、canonicalをpage_locationに指定し、referrerも空にします。広告パーソナライズ／Google signalsは無効にします。フォームの送信先からquery／fragmentを除き、SNS導線は設定入りhrefを持つリンクではなくボタンにし、保存名も固定して自動計測の対象へ設定を載せないようにしています。Google管理画面側の拡張計測・カスタムタグの設定はこのコードから確認・変更できないため、有効化前に拡張計測（とくに外部リンク・フォーム・履歴変更など）を無効にし、設定入りURLを自動収集しないことをオーナーが確認してください。
+計測するのは固定URLのページ閲覧と保存・共有の操作種別です。コードはURLのquery／fragment、調整値、seed、コピーしたURL、入力内容をイベントに渡さず、canonicalをpage_locationに指定し、referrerも空にします。広告パーソナライズ／Google signalsは無効にします。フォームの送信先からquery／fragmentを除き、SNS導線は設定入りhrefを持つリンクではなくボタンにし、保存名も固定して自動計測の対象へ設定を載せないようにしています。Google管理画面側の拡張計測・カスタムタグの設定はこのコードから確認・変更できないため、拡張計測の無効化が未確認の間はゲートをオフのままにします。有効化前に拡張計測（とくに外部リンク・フォーム・履歴変更など）を無効にし、設定入りURLを自動収集しないことをオーナーが確認してください。
 
-CIとローカル回帰はID未設定で実行し、タグ有効時の検査はテスト用IDとモックだけを使います。実際のGoogleへの送信やSNS投稿はテストしません。
+CIとローカル回帰はゲート無効で実行し、IDだけを設定しても計測が出ないことを確認します。タグ有効時の検査はテスト用IDとモックだけを使います。実際のGoogleへの送信やSNS投稿はテストしません。
 
 参照: [Googleタグ](https://developers.google.com/tag-platform/gtagjs)、[Actions Variables](https://docs.github.com/en/actions/reference/workflows-and-actions/variables)、[Open Graph](https://ogp.me/)、[LINE共有](https://developers.line.biz/en/docs/line-social-plugins/install-guide/using-line-share-buttons/)。
 

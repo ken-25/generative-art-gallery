@@ -33,7 +33,11 @@ export async function catalog(directory) {
 export function tagId(value='') {
  const id=value.trim();if(id&&!/^(G|GT)-[A-Z0-9]{6,20}$/.test(id))throw Error('GOOGLE_TAG_ID must be a valid G- or GT- tag ID');return id;
 }
-const googleTagId=tagId(process.env.GOOGLE_TAG_ID);
+export function analyticsTag(enabled='',value='') {
+ if(enabled!=='true')return '';
+ const id=tagId(value);if(!id)throw Error('GOOGLE_TAG_ENABLED=true requires GOOGLE_TAG_ID');return id;
+}
+const googleTagId=analyticsTag(process.env.GOOGLE_TAG_ENABLED,process.env.GOOGLE_TAG_ID);
 export async function imageInfo(file) {
  const b=await readFile(file),ext=path.extname(file).toLowerCase();
  let width,height;
@@ -48,7 +52,7 @@ export async function imageInfo(file) {
 }
 export function seo(html,title,description,url,image,info={}) {
  html=html.replace(/<title>.*?<\/title>/s,'').replace(/<meta name="description"[^>]*>/g,'');
- const tags=`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">${googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-id="${googleTagId}"></script>`:''}`;
+ const tags=`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}"><meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}"><meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">${googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-enabled="true" data-google-tag-id="${googleTagId}"></script>`:''}`;
  return html.replace('</head>',()=>tags+'</head>');
 }
 export async function build() {
