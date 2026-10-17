@@ -18,4 +18,4 @@ Copyright (c) Microsoft Corporation
 
 - ライセンス: [Apache-2.0](https://github.com/microsoft/playwright/blob/v1.62.1/LICENSE)
 - 出典: [microsoft/playwright](https://github.com/microsoft/playwright)
-- [NOTICE](https://github.com/microsoft/playwright/blob/v1.62.1/NOTICE)・[ThirdPartyNotices.txt](https://github.com/microsoft/playwright/blob/v1.62.1/ThirdPartyNotices.txt)
+- [NOTICE](https://github.com/microsoft/playwright/blob/v1.62.1/NOTICE)・[ThirdPartyNotices.txt](https://github.com/microsoft/playwright/blob/v1.62.1/packages/playwright/ThirdPartyNotices.txt)
