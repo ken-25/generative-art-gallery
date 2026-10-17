@@ -65,5 +65,5 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
 test('flat catalog preserves every artwork number',async()=>{
  const works=await catalog(path.resolve('works'));
  assert.ok(works.every(m=>!Object.hasOwn(m,'theme')));
- assert.deepEqual(works.slice(0,13).map(m=>m.slug),['order-and-chance','truchet-tiles','lissajous','recursive-regions','line-trails','octahedral-paths','layered-lines','density-field','hex-transitions','flow-and-silence','nested-hexagons','probability-segments','ink-on-water']);
+ assert.deepEqual(works.slice(0,24).map(m=>m.slug),['order-and-chance','truchet-tiles','lissajous','recursive-regions','line-trails','octahedral-paths','layered-lines','density-field','hex-transitions','flow-and-silence','nested-hexagons','probability-segments','ink-on-water','rolling-circles','branching-rules','chaos-game','julia-mandelbrot','elementary-automata','reaction-diffusion','flocking-trails','diffusion-aggregation','penrose-triangles','voronoi-relaxation','lorenz-orbit']);
 });

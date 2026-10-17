@@ -1318,5 +1318,59 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A200%2C%22iterations%22%3A20%2C%22style%22%3A%22both%22%2C%22markers%22%3A%22show%22%2C%22palette%22%3A%22clay%22%2C%22seed%22%3A%22voronoi-001%22%7D%7D",
     "svgSha256": "7bee25015daf5c0b09cb01a7cf7001a480fdd985aa04238710a6c979f993a18c",
     "svgPortableSha256": "7bee25015daf5c0b09cb01a7cf7001a480fdd985aa04238710a6c979f993a18c"
+  },
+  {
+    "slug": "lorenz-orbit",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rho": 28,
+      "x0": 1,
+      "y0": 1,
+      "z0": 1,
+      "projection": "xz",
+      "points": 12000,
+      "width": 0.7,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rho%22%3A28%2C%22x0%22%3A1%2C%22y0%22%3A1%2C%22z0%22%3A1%2C%22projection%22%3A%22xz%22%2C%22points%22%3A12000%2C%22width%22%3A0.7%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "ca2632218b25f4f54b73953322776bf059efba8465d389c6377afb77b8954ca1",
+    "svgPortableSha256": "ca2632218b25f4f54b73953322776bf059efba8465d389c6377afb77b8954ca1"
+  },
+  {
+    "slug": "lorenz-orbit",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rho": 0.5,
+      "x0": -20,
+      "y0": -20,
+      "z0": -10,
+      "projection": "xz",
+      "points": 1000,
+      "width": 0.3,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rho%22%3A0.5%2C%22x0%22%3A-20%2C%22y0%22%3A-20%2C%22z0%22%3A-10%2C%22projection%22%3A%22xz%22%2C%22points%22%3A1000%2C%22width%22%3A0.3%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "4d2f418a11649cfb4a4e67e44cf3ed2e08d43f6f3739a462408657b288a1545d",
+    "svgPortableSha256": "4d2f418a11649cfb4a4e67e44cf3ed2e08d43f6f3739a462408657b288a1545d"
+  },
+  {
+    "slug": "lorenz-orbit",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rho": 60,
+      "x0": 20,
+      "y0": 20,
+      "z0": 50,
+      "projection": "xz",
+      "points": 20000,
+      "width": 3,
+      "palette": "dusk"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rho%22%3A60%2C%22x0%22%3A20%2C%22y0%22%3A20%2C%22z0%22%3A50%2C%22projection%22%3A%22xz%22%2C%22points%22%3A20000%2C%22width%22%3A3%2C%22palette%22%3A%22dusk%22%7D%7D",
+    "svgSha256": "f20ccce6e461f8a4cb72badb3f6acfc40b44d6079985a797d2f79befc1e1e6a1",
+    "svgPortableSha256": "f20ccce6e461f8a4cb72badb3f6acfc40b44d6079985a797d2f79befc1e1e6a1"
   }
 ]

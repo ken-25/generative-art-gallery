@@ -1,0 +1,17 @@
+{
+  "slug": "lorenz-orbit",
+  "title": "ローレンツの軌道",
+  "description": "三つの変数の簡単な式から、二つの輪を行き来して決して重ならない軌道が生まれる。",
+  "addedAt": "2026-10-17T23:00:00Z",
+  "tags": [
+    "mathematics",
+    "chaos"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Edward N. Lorenz「Deterministic Nonperiodic Flow」Journal of the Atmospheric Sciences 20（1963）",
+      "url": "https://journals.ametsoc.org/view/journals/atsc/20/2/1520-0469_1963_020_0130_dnf_2_0_co_2.xml"
+    }
+  ]
+}
