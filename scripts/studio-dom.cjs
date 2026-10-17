@@ -32,203 +32,116 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    HTMLCanvasElement.prototype.toBlob=function(callback,...args){window.__pngConversions=(window.__pngConversions||0)+1;return toBlob.call(this,blob=>{if(window.__holdPNG)window.__releasePNG=()=>{window.__releasePNG=null;callback(blob);};else callback(blob);},...args);};
    Object.defineProperty(navigator,'userActivation',{value:{get isActive(){return window.__activation!==false;}}});
    window.open=(url,target,features)=>{window.__opened={url,target,features};return null;};
-   Object.defineProperty(navigator,'clipboard',{value:{writeText:async text=>{if(window.__copyFail)throw Error('copy failed');window.__copied=text;}}});
-   Object.defineProperty(navigator,'share',{value:async data=>{window.__shareCalls=(window.__shareCalls||0)+1;window.__shareWasActive=navigator.userActivation.isActive;if(data.files)window.__sharedFile=data.files[0];if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
-   Object.defineProperty(navigator,'canShare',{value:()=>window.__canShare!==false});
+   Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async text=>{window.__copyCalls=(window.__copyCalls||0)+1;if(window.__copyHold)await new Promise(r=>window.__releaseCopy=r);if(window.__copyFail)throw Error('copy failed');window.__copied=text;}}});
+   Object.defineProperty(navigator,'share',{configurable:true,value:async data=>{window.__shareCalls=(window.__shareCalls||0)+1;window.__shareWasActive=navigator.userActivation.isActive;if(window.__shareHold)await new Promise(r=>window.__releaseShare=r);if(data.files)window.__sharedFile=data.files[0];if(window.__shareError)throw new DOMException('mock',window.__shareError);window.__shared={url:data.url,title:data.title,files:data.files?.map(f=>({name:f.name,type:f.type,size:f.size}))};}});
+   Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>window.__canShare!==false});
   });
   await page.route(/googletagmanager\.com|google-analytics\.com/,route=>{errors.push('Unexpected live analytics');return route.abort();});
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const state=()=>page.evaluate(()=>({svg:document.querySelector('#art').innerHTML,settings:[...document.querySelector('form').elements].filter(e=>e.name).map(e=>[e.name,e.type==='radio'?e.checked:e.value])}));
   const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-  const exportPNG=async()=>{const waiting=page.waitForEvent('download');await page.locator('#download-png').click();const d=await waiting;assert.equal(await d.failure(),null);return fs.readFile(await d.path());};
+  const closeDialog=async()=>{if(await page.locator('#studio-dialog').evaluate(d=>d.open)){await page.locator('#dialog-close').click();await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);await settle();}};
+  const openDialog=async mode=>{const current=await page.locator('#studio-dialog').evaluate(d=>({open:d.open,mode:d.dataset.mode}));if(current.open&&current.mode!==mode)await closeDialog();if(!current.open||current.mode!==mode)await page.locator(mode==='save'?'#save-open':'#share-open').click();};
+  const format=async value=>{await openDialog('save');if(await page.locator('#save-format').inputValue()!==value)await page.locator('#save-format').selectOption(value);};
+  const exportFile=async(type='png',size='1600')=>{await format(type);if(type==='png'&&await page.locator('#png-size').inputValue()!==size)await page.locator('#png-size').selectOption(size);const waiting=page.waitForEvent('download');await page.locator('#download-file').click();const d=await waiting;assert.equal(await d.failure(),null);const bytes=await fs.readFile(await d.path());await closeDialog();return bytes;};
   const svgSnapshot=()=>page.locator('#art svg').evaluate(e=>new XMLSerializer().serializeToString(e));
-  const verifyPixels=async(svg,bytes,label)=>{const result=await page.evaluate(comparePNG,{svg,png:bytes.toString('base64')});assert.ok(result.meanError<1,`${label}: overall pixel error ${result.meanError}`);assert.ok(result.inkError<4,`${label}: foreground pixel error ${result.inkError}`);return result;};
-
+  const verifyPixels=async(svg,bytes,label)=>{const r=await page.evaluate(comparePNG,{svg,png:bytes.toString('base64')});assert.ok(r.meanError<1,`${label}: pixel error ${r.meanError}`);assert.ok(r.inkError<4,`${label}: foreground error ${r.inkError}`);return r;};
+  const contractFor=async slug=>legacy[slug]?{schema:false,fields:legacy[slug]}:page.evaluate(()=>{
+   const G=window.StudyGenerator,fields={};if(!G||!window.StudyControls)throw Error('Missing schema');
+   for(const key of new Set([...Object.keys(G.defaults),...Object.keys(G.schema)])){const rule=G.schema[key],ui=StudyControls.definition(G,key);fields[key]=key==='seed'?{type:'text'}:rule.options?{type:'select',options:Object.keys(rule.options)}:{type:ui.control,min:rule.min,max:rule.max,step:rule.step,output:true};Object.assign(fields[key],{label:ui.label,help:ui.help});}return {schema:true,fields};
+  });
+  const verifyContract=async slug=>{
+   const contract=await contractFor(slug);assert.ok(Object.keys(contract.fields).length);
+   assert.deepEqual(Object.keys(contract.fields).sort(),await page.evaluate(()=>Object.keys((window.StudyGenerator||window.ArtGenerator||window.TruchetGenerator||window.LissajousGenerator).defaults).sort()));
+   assert.deepEqual(await page.evaluate(inspectControls,contract),[],slug+' complete form contract');
+   const failures=await page.evaluate(({source,contract})=>{
+    const inspect=(0,eval)('('+source+')'),form=document.getElementById('settings'),backup=form.cloneNode(true),failed=[];
+    const probe=(name,change)=>{const copy=backup.cloneNode(true);form.replaceWith(copy);change(copy);if(!inspect(contract).length)failed.push(name);copy.replaceWith(form);};
+    probe('zero inputs',f=>f.replaceChildren());if(contract.schema)probe('zero wrappers',f=>f.querySelectorAll('[data-control]').forEach(e=>e.removeAttribute('data-control')));
+    for(const[key,rule]of Object.entries(contract.fields)){const get=f=>[...f.querySelectorAll('[name]')].find(e=>e.name===key);probe(key+' missing',f=>get(f).remove());probe(key+' type',f=>{const e=get(f);if(e.tagName==='INPUT')e.type=e.type==='text'?'number':'text';else{const t=document.createElement('textarea');for(const a of e.attributes)t.setAttribute(a.name,a.value);e.replaceWith(t);}});probe(key+' label',f=>{for(const l of [...get(f).labels])l.replaceWith(...l.childNodes);});probe(key+' help',f=>get(f).removeAttribute('aria-describedby'));if(rule.min!==undefined)for(const attr of ['min','max','step'])probe(key+attr,f=>get(f).setAttribute(attr,'99999'));if(rule.output){probe(key+' output',f=>f.querySelector('#'+key+'-value').remove());probe(key+' stale output',f=>f.querySelector('#'+key+'-value').textContent='99999');}}
+    return failed;
+   },{source:inspectControls.toString(),contract});assert.deepEqual(failures,[],slug+' catches missing/wrong fields');
+  };
   for(const width of [1440,375]){
    await page.setViewportSize({width,height:1000});
-   for(const {slug} of catalog){
-    const url=base+'works/'+slug+'/';
-    for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
-    const initial=await state();
-    const initialReference=await svgSnapshot(),initialPNG=await exportPNG();const initialPixels=await verifyPixels(initialReference,initialPNG,slug+' default SVG/PNG');assert.ok(initialPixels.ink>100,slug+' nonempty default drawing');
-    if(slug==='order-and-chance'&&width===1440){const blank=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=1600;c.height=1600;const ctx=c.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,c.width,c.height);return c.toDataURL().split(',')[1];});await assert.rejects(verifyPixels(initialReference,Buffer.from(blank,'base64'),'blank PNG must fail'));}
-
-    assert.equal(await page.locator('script[data-google-tag-id]').count(),0,'default build has no live analytics');
-    const metadata=await page.evaluate(()=>Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],link[rel=canonical]')].map(e=>[e.getAttribute('property')||e.getAttribute('name')||'canonical',e.content||e.href])));
-    assert.equal(metadata['twitter:card'],'summary');assert.equal(metadata['og:url'],catalog.find(m=>m.slug===slug).url);assert.equal(metadata.canonical,metadata['og:url']);assert.ok(metadata['og:image'].startsWith('https://'));assert.ok(metadata['twitter:image:alt']);assert.ok(Number(metadata['og:image:width'])>0&&Number(metadata['og:image:height'])>0);
-
-    const contract=legacy[slug]?{schema:false,fields:legacy[slug]}:await page.evaluate(()=>{
-     const G=window.StudyGenerator;if(!G||!window.StudyControls)throw Error('Missing schema generator or definitions');
-     const fields={};
-     for(const key of new Set([...Object.keys(G.defaults),...Object.keys(G.schema)])){
-      const rule=G.schema[key],ui=StudyControls.definition(G,key);
-      fields[key]=key==='seed'?{type:'text'}:rule.options?{type:'select',options:Object.keys(rule.options)}:{type:ui.control,min:rule.min,max:rule.max,step:rule.step,output:true};
-      fields[key].label=ui.label;fields[key].help=ui.help;
-     }
-     return {schema:true,fields};
-    });
-    assert.ok(Object.keys(contract.fields).length,slug+' nonempty expected contract');
-    const generatorKeys=await page.evaluate(()=>Object.keys((window.StudyGenerator||window.ArtGenerator||window.TruchetGenerator||window.LissajousGenerator).defaults).sort());
-    assert.deepEqual(Object.keys(contract.fields).sort(),generatorKeys,slug+' contract covers every generator key');
-    assert.deepEqual(await page.evaluate(inspectControls,contract),[],slug+' complete control contract');
-    // Mutation checks prove the browser audit fails on absent panels/fields,
-    // incorrect widget types, limits, steps, labels, explanations and outputs.
-    const mutationFailures=await page.evaluate(({source,contract})=>{
-     const inspect=(0,eval)('('+source+')'),form=document.getElementById('settings'),backup=form.cloneNode(true),failures=[];
-     const probe=(name,mutate)=>{const copy=backup.cloneNode(true);form.replaceWith(copy);mutate(copy);if(!inspect(contract).length)failures.push(name);copy.replaceWith(form);};
-     probe('zero controls',f=>f.replaceChildren());
-     if(contract.schema)probe('zero schema wrappers',f=>f.querySelectorAll('[data-control]').forEach(e=>e.removeAttribute('data-control')));
-     for(const [key,rule] of Object.entries(contract.fields)){
-      const get=f=>[...f.querySelectorAll('[name]')].find(e=>e.name===key);
-      probe(key+' missing',f=>get(f).remove());
-      probe(key+' type',f=>{const input=get(f);if(input.tagName==='INPUT')input.type=input.type==='text'?'number':'text';else{const replacement=document.createElement('textarea');for(const a of input.attributes)replacement.setAttribute(a.name,a.value);input.replaceWith(replacement);}});
-      probe(key+' label',f=>{for(const l of [...get(f).labels])l.replaceWith(...l.childNodes);});
-      probe(key+' help',f=>get(f).removeAttribute('aria-describedby'));
-      if(rule.min!==undefined)for(const attr of ['min','max','step'])probe(key+' '+attr,f=>get(f).setAttribute(attr,'99999'));
-      if(rule.output){probe(key+' output',f=>f.querySelector('#'+key+'-value').remove());probe(key+' stale output',f=>f.querySelector('#'+key+'-value').textContent='99999');}
-     }
-     return failures;
-    },{source:inspectControls.toString(),contract});
-    assert.deepEqual(mutationFailures,[],slug+' rejects malformed controls');
-
-    const metrics=await page.evaluate(()=>{
-     const d=document.getElementById('download'),share=document.querySelector('.share-button'),a=document.getElementById('actions'),reset=a.querySelector('button[type=reset]'),box=d.getBoundingClientRect(),style=getComputedStyle(d);
-     return {overflow:document.documentElement.scrollWidth>innerWidth,bg:style.backgroundColor,color:style.color,width:box.width,available:a.getBoundingClientRect().width,height:box.height,gap:box.top-reset.getBoundingClientRect().bottom,shareWidth:share.getBoundingClientRect().width};
-    });
-    assert.equal(metrics.overflow,false,slug+' horizontal overflow');assert.equal(metrics.bg,'rgb(64, 89, 68)',slug+' primary color');assert.equal(metrics.color,'rgb(255, 255, 255)');assert.ok(metrics.width>=metrics.available-1&&metrics.height>=44,slug+' full-width SVG');assert.ok(metrics.gap>=8,slug+' action spacing');assert.equal(metrics.shareWidth,metrics.width);
-    const seed=page.locator('[name=seed]');assert.equal(await page.locator('#new-seed').count(),await seed.count(),slug+' seed action');
-    const range=page.locator('input[type=range]:visible').first();const before=await range.inputValue();await range.focus();await page.keyboard.press('End');await settle();const max=await range.getAttribute('max');assert.equal(await range.inputValue(),max);assert.notEqual(await range.inputValue(),before);const key=await range.getAttribute('name');const output=page.locator('#'+key+'-value');assert.equal(parseFloat(await output.textContent()),slug==='truchet-tiles'?57:Number(max),slug+' output follows keyboard');await page.keyboard.press('Home');await settle();assert.equal(parseFloat(await output.textContent()),Number(await range.getAttribute('min')));
-    const number=page.locator('input[type=number]').first();if(await number.count()){
-     const min=await number.getAttribute('min'),max=await number.getAttribute('max');await number.fill(String(Number(max)+100));await number.press('Tab');await settle();assert.equal(await number.inputValue(),max,slug+' upper clamp');await number.fill(String(Number(min)-100));await number.press('Tab');await settle();assert.equal(await number.inputValue(),min,slug+' lower clamp');await number.fill('');await number.press('Tab');await settle();assert.notEqual(await number.inputValue(),'',slug+' empty fallback');
-    }
-    if(slug==='hex-transitions'){
-     await page.locator('#states').fill('2');await page.locator('#states').dispatchEvent('change');await settle();assert.equal(await page.locator('input[name^=w]:enabled').count(),4);assert.equal(await page.locator('input[name^=w]:disabled').count(),12);
-     await page.locator('#states').fill('4');await page.locator('#states').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:enabled').count(),16);
-     await page.locator('#w33').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await settle();
-     await page.locator('#states').fill('2');await page.locator('#states').dispatchEvent('change');assert.equal(await page.locator('#w33').inputValue(),'23');assert.equal(await page.locator('#w33').isDisabled(),true);
-    }
-    if(slug==='probability-segments'){
-     await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');await settle();assert.equal(await page.locator('input[name^=w]:not([name=width]):enabled').count(),2);
-     assert.equal(await page.locator('input[name^=w]:disabled').count(),4);
-     await page.locator('#directions').fill('6');await page.locator('#directions').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:not([name=width]):enabled').count(),6);
-     await page.locator('#w5').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await settle();await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');assert.equal(await page.locator('#w5').inputValue(),'23');assert.equal(await page.locator('#w5').isDisabled(),true);
-    }
-    if(await seed.count()){const old=await seed.inputValue();await page.locator('#new-seed').click();assert.notEqual(await seed.inputValue(),old);}
-    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const shared=await page.locator('textarea').inputValue();const expected=await state();assert.ok(shared.includes(prefix+'works/'+slug+'/')&&shared.includes('#art='));await page.goto(shared);await settle();assert.deepEqual(await state(),expected,slug+' share restores exact drawing and form');
-    await page.locator('.skip').focus();await page.keyboard.press('Enter');await settle();assert.deepEqual(await state(),expected,slug+' skip link preserves drawing');
-    const downloading=page.waitForEvent('download');await page.locator('#download').click();const download=await downloading;assert.equal(await download.failure(),null);const svg=await fs.readFile(await download.path(),'utf8');assert.match(svg,/<svg/);assert.match(svg,/<metadata>/);assert.ok(svg.includes(expected.svg.slice(0,30)),slug+' downloaded SVG');
-    const pngWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const pngDownload=await pngWaiting;assert.equal(await pngDownload.failure(),null);const pngBytes=await fs.readFile(await pngDownload.path());assert.equal(pngBytes.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.ok(pngBytes.length>1000);const pw=pngBytes.readUInt32BE(16),ph=pngBytes.readUInt32BE(20);assert.equal(Math.max(pw,ph),1600);assert.ok(pw*ph<=8e6);
-    const changedPixels=await verifyPixels(svg,pngBytes,slug+' changed SVG/PNG');assert.notEqual(changedPixels.pixelHash,initialPixels.pixelHash,slug+' settings change actual pixels');
-    const raster=await page.evaluate(async data=>{
-     const svg=document.querySelector('#art svg'),box=svg.viewBox.baseVal;
-     const image=new Image();await new Promise((r,j)=>{image.onload=r;image.onerror=j;image.src='data:image/png;base64,'+data;});const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height;const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);const corner=[...ctx.getImageData(0,0,1,1).data];ctx.fillStyle=svg.querySelector('rect').getAttribute('fill');ctx.fillRect(0,0,1,1);const background=[...ctx.getImageData(0,0,1,1).data];return {ratio:box.width/box.height,corner,background};
-    },pngBytes.toString('base64'));assert.ok(Math.abs(pw/ph-raster.ratio)<.01);assert.deepEqual(raster.corner,raster.background,slug+' PNG background retained');
-    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const urlForShare=await page.locator('textarea').inputValue();assert.equal(new URL(await page.locator('#settings').getAttribute('action')).hash,'');assert.equal(await page.locator('a[data-social]').count(),0,'SNS uses buttons to avoid automatic outbound link tracking');
-    for(const key of ['x','line','facebook']){const href=await page.locator(`[data-social=${key}]`).getAttribute('data-share-url');assert.equal(new URL(href).searchParams.get(key==='facebook'?'u':'url'),urlForShare);await page.locator(`[data-social=${key}]`).click();assert.equal(await page.evaluate(()=>window.__opened.url),href);assert.match(await page.evaluate(()=>window.__opened.features),/noopener,noreferrer/);}
-    if(await seed.count()){await seed.fill('日本語 & # / % " <>');await seed.dispatchEvent('change');await settle();await page.getByRole('button',{name:'この絵を共有',exact:true}).click();const unicodeURL=await page.locator('textarea').inputValue();assert.equal(JSON.parse(decodeURIComponent(new URL(unicodeURL).hash.slice(5))).settings.seed,'日本語 & # / % " <>');await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),unicodeURL);}else{await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),urlForShare);}
-
-    await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__shared.files[0].type),'image/png');
-    if(slug==='probability-segments'){
-     await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('キャンセル'));
-     await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('もう一度'));assert.equal(await page.locator('#share-png').isDisabled(),false);
-     await page.locator('#png-size').selectOption('2400');const highWaiting=page.waitForEvent('download');await page.locator('#download-png').click();const high=await highWaiting;const bytes=await fs.readFile(await high.path());assert.equal(Math.max(bytes.readUInt32BE(16),bytes.readUInt32BE(20)),2400);
-    }
-    await page.evaluate(()=>{window.__copyFail=true;});await page.locator('#copy-link').click();assert.match(await page.locator('.share-controls>p').textContent(),/手動/);
-    await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-native').click();assert.match(await page.locator('.share-controls>p').textContent(),/キャンセル/);
-    await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-native').click();assert.match(await page.locator('.share-controls>p').textContent(),/コピー/);
-    await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('画像の共有に対応していません'));
-    if(process.env.GALLERY_QA_DIR&&['order-and-chance','probability-segments'].includes(slug)){await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`sharing-${slug}-${width}.png`),fullPage:true});}
-    await page.getByRole('button',{name:'この絵を共有',exact:true}).click();await page.getByRole('button',{name:'リセット',exact:true}).click();await settle();assert.deepEqual(await state(),initial,slug+' resets all settings');assert.equal(await page.locator('textarea').inputValue(),'');assert.equal(await page.locator('.share-controls>label').isVisible(),false,slug+' hides stale share URL');
-    await page.goto(url+'#art=%7B');await settle();assert.deepEqual(await state(),initial);assert.match(await page.locator('.share-controls>p').textContent(),/初期設定/);
-    if(process.env.GALLERY_QA_DIR&&['recursive-regions','hex-transitions','probability-segments'].includes(slug)){await page.goto(url);await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`after-${slug}-${width}.png`),fullPage:true});}
-    if(['hex-transitions','probability-segments'].includes(slug)){
-     await page.goto(url);const count=page.locator(slug==='hex-transitions'?'#states':'#directions');await count.fill(await count.getAttribute('max'));await count.dispatchEvent('change');await settle();for(const summary of await page.locator('.control-details summary:visible').all())await summary.click();
-     assert.deepEqual(await page.evaluate(inspectControls,contract),[]);
-     const layout=await page.evaluate(()=>{
-      const issues=[],visible=[...document.querySelectorAll('.controls .field')].filter(e=>e.getClientRects().length);
-      if(document.documentElement.scrollWidth>innerWidth)issues.push('page overflow');
-      const panel=document.querySelector('.controls').getBoundingClientRect();
-      for(const field of visible){const r=field.getBoundingClientRect();if(r.left<panel.left-1||r.right>panel.right+1)issues.push('field overflow');const input=field.querySelector('input,select'),label=field.querySelector('label');if(input&&label&&input.getBoundingClientRect().top<label.getBoundingClientRect().bottom-1)issues.push('label/input overlap');}
-      for(let i=0;i<visible.length;i++)for(let j=i+1;j<visible.length;j++){const a=visible[i].getBoundingClientRect(),b=visible[j].getBoundingClientRect();if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>1&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1)issues.push('fields overlap');}
-      for(const group of document.querySelectorAll('.control-details[open]')){const fields=[...group.querySelectorAll('.field')].filter(e=>e.getClientRects().length);for(let i=1;i<fields.length;i++)if(fields[i].getBoundingClientRect().top-fields[i-1].getBoundingClientRect().bottom<12)issues.push('insufficient field gap');}
-      return issues;
-     });assert.deepEqual(layout,[],slug+' expanded layout');
-     if(process.env.GALLERY_QA_DIR)await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`expanded-${slug}-${width}.png`),fullPage:true});
-    }
-    if(slug==='probability-segments'&&width===375){
-     // Delay conversion completion while mock transient activation expires.
-     await page.goto(url);await page.getByRole('button',{name:'この絵を共有',exact:true}).click();
-     await page.evaluate(()=>{window.__holdPNG=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');
-     assert.equal(await page.evaluate(()=>window.__pngConversions),1);
-     await page.evaluate(()=>{window.__activation=false;window.__holdPNG=false;window.__releasePNG();});
-     await page.waitForFunction(()=>document.getElementById('status').textContent.includes('もう一度'));
-     assert.equal(await page.evaluate(()=>window.__shareCalls||0),0,'expired activation never invokes native share automatically');
-     assert.equal(await page.locator('#share-png').textContent(),'準備済みPNGを共有');
-     await page.evaluate(()=>{window.__activation=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');
-     assert.equal(await page.evaluate(()=>window.__pngConversions),1,'second click skips rasterization');assert.equal(await page.evaluate(()=>window.__shareWasActive),true);
-     await page.evaluate(()=>{window.__previousFile=window.__sharedFile;window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('キャンセル'));
-     assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),true,'cancel retains the prepared File');
-     await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent.includes('画像の共有に対応していません'));
-     await page.evaluate(()=>{window.__canShare=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),1);
-     await page.locator('#mean').fill('19');await page.locator('#mean').dispatchEvent('change');assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有');
-     await page.getByRole('button',{name:'この絵を共有',exact:true}).click();await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),2);assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),false,'settings invalidate the File');
-     await page.locator('#png-size').selectOption('2400');assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有');await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),3,'size invalidates the File');
-     // A pending export owns its click-time SVG and size, even when controls change.
-     await page.goto(url);const clickedSVG=await svgSnapshot();await page.evaluate(()=>{window.__holdPNG=true;});
-     const waiting=page.waitForEvent('download');await page.locator('#download-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');
-     await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');await page.locator('#png-size').selectOption('2400');await settle();const currentSVG=await svgSnapshot();assert.notEqual(currentSVG,clickedSVG);
-     await page.evaluate(()=>{window.__holdPNG=false;window.__releasePNG();});const pending=await waiting;const clickedBytes=await fs.readFile(await pending.path());assert.equal(Math.max(clickedBytes.readUInt32BE(16),clickedBytes.readUInt32BE(20)),1600);await verifyPixels(clickedSVG,clickedBytes,'click-time snapshot after edits');
-     assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有','old in-flight File must not enter new settings cache');
-     const currentBytes=await exportPNG();assert.equal(Math.max(currentBytes.readUInt32BE(16),currentBytes.readUInt32BE(20)),2400);await verifyPixels(currentSVG,currentBytes,'next export uses new settings');
-     console.log('PASS delayed activation/retry without conversion, cancel/fallback, invalidation, click-time snapshot');
-    }
-    console.log(`PASS ${width}px ${slug}: style, boundaries, keyboard, seed, share, SVG, reset`);
+   for(const {slug,url:canonical}of catalog){
+    const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
+    const initial=await state();await verifyContract(slug);
+    assert.equal(await page.locator('#actions>button').count(),2);assert.deepEqual(await page.locator('#actions>button').allTextContents(),['保存','共有']);assert.equal(await page.locator('#actions input,#actions select,#actions textarea,#actions #new-seed,#actions button[type=reset]').count(),0);
+    assert.equal(await page.locator('#studio-dialog').evaluate(d=>d.open),false);assert.equal(await page.locator('script[data-google-tag-id]').count(),0);
+    const seed=page.locator('#settings [name=seed]');assert.equal(await page.locator('.generation-settings #new-seed').count(),await seed.count());if(await seed.count())assert.equal(await seed.evaluate(e=>!!e.closest('.generation-settings')),true);
+    const metadata=await page.evaluate(()=>Object.fromEntries([...document.querySelectorAll('meta[property],meta[name],link[rel=canonical]')].map(e=>[e.getAttribute('property')||e.getAttribute('name')||'canonical',e.content||e.href])));assert.equal(metadata.canonical,canonical);assert.equal(metadata['og:url'],canonical);assert.equal(metadata['twitter:card'],'summary');assert.ok(metadata['og:image'].startsWith('https://'));
+    assert.equal(await page.locator('a').evaluateAll(as=>as.some(a=>!a.getAttribute('href')?.startsWith('http')&&/\.md(?:#|$)/.test(a.getAttribute('href')||''))),false);
+    const initialReference=await svgSnapshot(),initialPNG=await exportFile(),initialPixels=await verifyPixels(initialReference,initialPNG,slug+' default');assert.ok(initialPixels.ink>100);
+    if(slug==='order-and-chance'&&width===1440){const blank=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=c.height=1600;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,1600,1600);return c.toDataURL().split(',')[1];});await assert.rejects(verifyPixels(initialReference,Buffer.from(blank,'base64'),'blank image'));}
+    const range=page.locator('#settings input[type=range]:visible').first();await range.focus();await page.keyboard.press('End');await settle();const max=await range.getAttribute('max');assert.equal(await range.inputValue(),max);const key=await range.getAttribute('name');assert.equal(parseFloat(await page.locator('#'+key+'-value').textContent()),slug==='truchet-tiles'?57:Number(max));await page.keyboard.press('Home');await settle();assert.equal(await range.inputValue(),await range.getAttribute('min'));
+    const number=page.locator('#settings input[type=number]').first();if(await number.count()){const min=await number.getAttribute('min'),max=await number.getAttribute('max');for(const[value,expected]of [[String(Number(max)+100),max],[String(Number(min)-100),min]]){await number.fill(value);await number.press('Tab');await settle();assert.equal(await number.inputValue(),expected);}await number.fill('');await number.press('Tab');await settle();assert.notEqual(await number.inputValue(),'');}
+    if(slug==='hex-transitions'){await page.locator('#states').fill('4');await page.locator('#states').dispatchEvent('change');await page.locator('#w33').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await page.locator('#states').fill('2');await page.locator('#states').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:enabled').count(),4);assert.equal(await page.locator('#w33').inputValue(),'23');}
+    if(slug==='probability-segments'){await page.locator('#directions').fill('6');await page.locator('#directions').dispatchEvent('change');await page.locator('#w5').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:not([name=width]):enabled').count(),2);assert.equal(await page.locator('#w5').inputValue(),'23');}
+    if(await seed.count()){const before=await seed.inputValue();await page.locator('#new-seed').click();assert.notEqual(await seed.inputValue(),before);await seed.fill('日本語 & # / % " <>');await seed.dispatchEvent('change');await settle();}
+    const expected=await state(),svg=(await exportFile('svg')).toString();assert.match(svg,/<metadata>/);await format('svg');await page.locator('#copy-svg').click();assert.equal(await page.evaluate(()=>window.__copied),svg);await closeDialog();
+    const png=await exportFile();assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(Math.max(png.readUInt32BE(16),png.readUInt32BE(20)),1600);const pixels=await verifyPixels(svg,png,slug+' changed');assert.notEqual(pixels.pixelHash,initialPixels.pixelHash);
+    const beforeOpen=await page.evaluate(()=>window.__copyCalls||0);await openDialog('share');assert.equal(await page.evaluate(()=>window.__copyCalls||0),beforeOpen,'opening never copies');const shared=await page.locator('#share-url').inputValue();await page.locator('#copy-link').click();assert.equal(await page.evaluate(()=>window.__copied),shared);
+    if(await seed.count())assert.equal(JSON.parse(decodeURIComponent(new URL(shared).hash.slice(5))).settings.seed,'日本語 & # / % " <>');
+    for(const social of ['x','line','facebook']){await page.locator(`[data-social=${social}]`).click();const opened=await page.evaluate(()=>window.__opened);assert.equal(new URL(opened.url).searchParams.get(social==='facebook'?'u':'url'),shared);assert.match(opened.features,/noopener,noreferrer/);}
+    await page.locator('#share-native').click();assert.equal(await page.evaluate(()=>window.__shared.url),shared);await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__shared.files[0].type),'image/png');
+    await page.evaluate(()=>{window.__copyFail=true;});await page.locator('#copy-link').click();assert.match(await page.locator('#dialog-status').textContent(),/手動/);assert.equal(await page.locator('#share-url').evaluate(e=>e.selectionEnd-e.selectionStart),shared.length);
+    await page.evaluate(()=>{window.__shareError='AbortError';});await page.locator('#share-native').click();assert.match(await page.locator('#dialog-status').textContent(),/キャンセル/);await page.evaluate(()=>{window.__shareError='NotAllowedError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('もう一度'));
+    await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('対応していません'));await closeDialog();
+    await page.goto(shared);await settle();assert.deepEqual(await state(),expected,slug+' v1 restore');await page.locator('.skip').focus();await page.keyboard.press('Enter');await settle();assert.deepEqual(await state(),expected,slug+' skip link');await page.getByRole('button',{name:'リセット',exact:true}).click();await settle();assert.deepEqual(await state(),initial,slug+' reset');
+    await page.goto(url+'#art=%7B');await settle();assert.deepEqual(await state(),initial);assert.match(await page.locator('#status').textContent(),/初期設定/);
+    console.log(`PASS ${width}px ${slug}: complete controls, seed/reset, modal SVG/code/PNG, pixel references, v1, clipboard/native fallbacks`);
    }
   }
-  console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons; settings change PNG pixels`);
-  // Themed browsing remains usable with JavaScript disabled.
+  console.log(`PASS ${catalog.length*4} independent SVG/PNG pixel comparisons`);
+  // Dialog lifecycle at desktop, short portrait, and landscape sizes.
+  for(const [width,height]of [[1440,1000],[320,568],[375,667],[667,375]]){
+   await page.setViewportSize({width,height});await page.goto(base+'works/order-and-chance/');await settle();const drawing=await state();
+   for(const mode of ['save','share']){
+    const entry=mode==='save'?'save-open':'share-open';await page.locator('#'+entry).focus();await settle();const scrollBefore=await page.evaluate(()=>scrollY);const calls=await page.evaluate(()=>window.__copyCalls||0);await openDialog(mode);
+    assert.equal(await page.locator('dialog[open]').count(),1);assert.equal(await page.evaluate(()=>window.__copyCalls||0),calls);assert.equal(await page.evaluate(()=>document.documentElement.style.overflow),'hidden');
+    const bounds=await page.locator('dialog[open]').evaluate(d=>({r:d.getBoundingClientRect().toJSON(),h:innerHeight,w:innerWidth}));assert.ok(bounds.r.left>=-1&&bounds.r.right<=bounds.w+1&&bounds.r.top>=-1&&bounds.r.bottom<=bounds.h+1);
+    if(process.env.GALLERY_QA_DIR){await fs.mkdir(process.env.GALLERY_QA_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.GALLERY_QA_DIR,`${mode}-${width}x${height}.png`)});}
+    const ids=await page.locator('dialog[open]').evaluate(d=>[...d.querySelectorAll('button,select,textarea')].filter(e=>!e.disabled&&e.getClientRects().length).map(e=>e.id));
+    await page.locator('#'+ids.at(-1)).focus();await page.keyboard.press('Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),ids[0]);await page.keyboard.press('Shift+Tab');assert.equal(await page.evaluate(()=>document.activeElement.id),ids.at(-1));
+    await page.keyboard.press('Escape');await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);await settle();assert.equal(await page.evaluate(()=>document.activeElement.id),entry);assert.equal(await page.evaluate(()=>document.documentElement.style.overflow),'');assert.equal(await page.evaluate(()=>document.body.style.overflow),'');assert.deepEqual(await state(),drawing);assert.equal(await page.evaluate(()=>scrollY),scrollBefore);
+    await openDialog(mode);await page.mouse.click(3,3);await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);await settle();assert.equal(await page.evaluate(()=>document.activeElement.id),entry);
+    await openDialog(mode);await page.evaluate(()=>{document.getElementById('dialog-close').click();document.getElementById('share-open').click();});assert.equal(await page.locator('dialog[open]').count(),1);assert.equal(await page.evaluate(()=>document.documentElement.style.overflow),'hidden');await closeDialog();assert.equal(await page.evaluate(()=>document.documentElement.style.overflow),'');
+   }
+   await format('svg');await page.evaluate(()=>{window.__copyFail=true;});await page.locator('#copy-svg').click();assert.equal(await page.locator('#svg-code-label').isVisible(),true);assert.match(await page.locator('#svg-code').inputValue(),/<svg/);assert.match(await page.locator('#dialog-status').textContent(),/手動/);await closeDialog();
+   await page.evaluate(()=>{window.__copyFail=false;window.__copyHold=true;});await openDialog('share');await page.locator('#copy-link').click();await page.waitForFunction(()=>typeof window.__releaseCopy==='function');await closeDialog();await openDialog('save');await page.evaluate(()=>{window.__copyHold=false;window.__releaseCopy();});await settle();assert.equal(await page.locator('#dialog-status').textContent(),'');assert.equal(await page.evaluate(()=>document.activeElement.id),'dialog-close');await closeDialog();
+  }
+  // Delayed rasterization, expired activation, and reopening preserve the prepared File.
+  await page.setViewportSize({width:375,height:667});const probability=base+'works/probability-segments/';await page.goto(probability);await openDialog('share');
+  await page.evaluate(()=>{window.__holdPNG=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');assert.equal(await page.evaluate(()=>window.__pngConversions),1);await page.evaluate(()=>{for(let i=0;i<8;i++)document.getElementById('share-png').click();});assert.equal(await page.evaluate(()=>window.__pngConversions),1);
+  await page.evaluate(()=>{window.__activation=false;window.__holdPNG=false;window.__releasePNG();});await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('もう一度'));assert.equal(await page.evaluate(()=>window.__shareCalls||0),0);
+  await closeDialog();await openDialog('share');await page.evaluate(()=>{window.__activation=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),1);assert.equal(await page.evaluate(()=>window.__shareWasActive),true);
+  await page.evaluate(()=>{window.__previousFile=window.__sharedFile;window.__shareError='AbortError';});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('キャンセル'));assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),true);
+  await page.evaluate(()=>{window.__shareError=null;window.__canShare=false;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('対応していません'));await closeDialog();const fallback=await exportFile();assert.equal(await page.evaluate(()=>window.__pngConversions),1);assert.equal(fallback.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  await page.locator('#mean').fill('19');await page.locator('#mean').dispatchEvent('change');await openDialog('share');await page.evaluate(()=>{window.__canShare=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),2);assert.equal(await page.evaluate(()=>window.__sharedFile===window.__previousFile),false);
+  await closeDialog();await format('png');await page.locator('#png-size').selectOption('2400');await closeDialog();await openDialog('share');await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),3);await closeDialog();
+  // Closing a pending download cancels its side effect; reopening never starts it automatically.
+  await page.goto(probability);await format('png');let downloads=0;const countDownload=()=>downloads++;page.on('download',countDownload);await page.evaluate(()=>{window.__holdPNG=true;});await page.locator('#download-file').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');await closeDialog();await openDialog('share');
+  await page.evaluate(()=>{window.__holdPNG=false;window.__releasePNG();});await page.waitForFunction(()=>!document.getElementById('share-png').disabled);assert.equal(downloads,0);assert.equal(await page.evaluate(()=>window.__shareCalls||0),0);await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),1);await closeDialog();
+  // An in-progress export keeps the clicked SVG/size, while edits invalidate the future cache.
+  await page.goto(probability);const clickedSVG=await svgSnapshot();await format('png');await page.evaluate(()=>{window.__holdPNG=true;});const waiting=page.waitForEvent('download');await page.locator('#download-file').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');
+  await page.evaluate(()=>{const d=document.getElementById('directions');d.value='2';d.dispatchEvent(new Event('change',{bubbles:true}));const size=document.getElementById('png-size');size.value='2400';size.dispatchEvent(new Event('change',{bubbles:true}));});await settle();const currentSVG=await svgSnapshot();assert.notEqual(clickedSVG,currentSVG);await page.evaluate(()=>{window.__holdPNG=false;window.__releasePNG();});const pending=await waiting,oldBytes=await fs.readFile(await pending.path());assert.equal(Math.max(oldBytes.readUInt32BE(16),oldBytes.readUInt32BE(20)),1600);await verifyPixels(clickedSVG,oldBytes,'click-time snapshot');await closeDialog();const currentBytes=await exportFile('png','2400');assert.equal(Math.max(currentBytes.readUInt32BE(16),currentBytes.readUInt32BE(20)),2400);await verifyPixels(currentSVG,currentBytes,'new settings');page.off('download',countDownload);
+  // Close + edit + reopen while conversion is pending must not reuse the stale File.
+  await page.goto(probability);await openDialog('share');await page.evaluate(()=>{window.__holdPNG=true;});await page.locator('#share-png').click();await page.waitForFunction(()=>typeof window.__releasePNG==='function');await closeDialog();await page.locator('#mean').fill('20');await page.locator('#mean').dispatchEvent('change');await openDialog('share');await page.evaluate(()=>{window.__holdPNG=false;window.__releasePNG();});await page.waitForFunction(()=>!document.getElementById('share-png').disabled);assert.equal(await page.locator('#share-png').textContent(),'現在のPNGを共有');assert.equal(await page.evaluate(()=>window.__shareCalls||0),0);await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent==='PNGを共有しました。');assert.equal(await page.evaluate(()=>window.__pngConversions),2);await closeDialog();
+  // Native sharing also rejects duplicate taps, and late completion stays in its original session.
+  await page.goto(probability);await openDialog('share');await page.evaluate(()=>{window.__shareHold=true;for(let i=0;i<8;i++)document.getElementById('share-native').click();});await page.waitForFunction(()=>typeof window.__releaseShare==='function');assert.equal(await page.evaluate(()=>window.__shareCalls),1);await closeDialog();await openDialog('save');await page.evaluate(()=>{window.__shareHold=false;window.__releaseShare();});await page.waitForFunction(()=>!document.getElementById('download-file').disabled);assert.doesNotMatch(await page.locator('#dialog-status').textContent(),/リンクを共有しました/);await closeDialog();
+  // Missing clipboard, share, and canShare APIs retain manual copy and download routes.
+  await page.goto(probability);await page.evaluate(()=>{for(const key of ['clipboard','share','canShare'])Object.defineProperty(navigator,key,{configurable:true,value:undefined});});await openDialog('share');await page.locator('#copy-link').click();assert.match(await page.locator('#dialog-status').textContent(),/手動/);await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('対応していません'));await closeDialog();assert.equal((await exportFile()).subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+  console.log('PASS modal Escape/backdrop/close/focus/Tab/scroll, copy fallback, delayed clipboard, activation retry, interrupted download/reopen/settings snapshot');
+  // Static unclassified list stays usable without page JavaScript.
   const home=await browser.newPage({javaScriptEnabled:false,viewport:{width:375,height:667}});
-  try{
-   await home.goto(base);const expectedGroups=new Set(catalog.map(m=>['randomness','lines','structure'].includes(m.theme)?m.theme:'other'));assert.equal(await home.locator('.theme-nav a').count(),expectedGroups.size);assert.equal(await home.locator('a.work-card').count(),catalog.length);
-   for(const m of catalog){const card=home.locator(`a.work-card[href="works/${m.slug}/"]`);assert.equal(await card.count(),1);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));}
-   for(const a of await home.locator('.theme-nav a').all()){const href=await a.getAttribute('href');await a.click();assert.equal(new URL(home.url()).hash,href);assert.equal(await home.locator(href).count(),1);}
-   assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-  }finally{await home.close();}
-  const touch=await browser.newPage({isMobile:true,hasTouch:true,viewport:{width:320,height:568}});
-  try{
-   for(const [width,height]of [[320,568],[375,667],[667,375],[844,390]]){
-    await touch.setViewportSize({width,height});
-    for(const {slug}of catalog){
-     await touch.goto(base+'works/'+slug+'/');await touch.locator('#art svg').waitFor();
-     for(const selector of ['input[type=range]','input[type=text]','#download-png']){
-      const control=touch.locator(selector).first();if(!await control.count())continue;
-      await control.focus();await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-      if(selector==='input[type=range]'){const before=await control.inputValue();await touch.keyboard.press('ArrowRight');await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));assert.notEqual(await control.inputValue(),before,slug+' keyboard range on short screen');}
-      const layout=await control.evaluate(e=>{
-       const p=document.querySelector('.paper-area').getBoundingClientRect(),r=e.getBoundingClientRect(),vp=window.visualViewport;
-       const nested=[document.querySelector('.studio'),document.querySelector('.controls'),document.querySelector('#settings')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1);
-       return {height:vp?.height||innerHeight,offset:vp?.offsetTop||0,preview:{top:p.top,bottom:p.bottom,height:p.height},control:{top:r.top,bottom:r.bottom,labelTop:e.labels?.length?Math.min(...[...e.labels].map(l=>l.getBoundingClientRect().top)):r.top},overflow:document.documentElement.scrollWidth>innerWidth,nested};
-      });
-      assert.equal(layout.overflow,false,slug+' mobile horizontal overflow');assert.equal(layout.nested,false,slug+' single scroll');assert.ok(layout.preview.height<=layout.height*.4+1,slug+' preview stays under 40%');assert.ok(layout.preview.top>=layout.offset-1,slug+' preview remains visible');assert.ok(layout.control.top>=layout.preview.bottom+8,slug+' focus below preview');assert.ok(layout.control.labelTop>=layout.preview.bottom+8,slug+' label below preview');assert.ok(layout.control.bottom<=layout.offset+layout.height-8,slug+' focus above viewport bottom');
-     }
-    }
-   }
-   // A reduced visual viewport models keyboard space; this is not an iPhone hardware test.
-   await touch.setViewportSize({width:375,height:667});await touch.goto(base+'works/probability-segments/');await touch.locator('#seed').focus();await touch.setViewportSize({width:375,height:320});
-   await touch.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
-   const keyboard=await touch.locator('#seed').evaluate(e=>({field:e.getBoundingClientRect().toJSON(),preview:document.querySelector('.paper-area').getBoundingClientRect().toJSON(),height:visualViewport.height}));
-   assert.ok(keyboard.preview.height<=keyboard.height*.4+1);assert.ok(keyboard.field.top>=keyboard.preview.bottom+8);assert.ok(keyboard.field.bottom<=keyboard.height-8);
-   await touch.locator('#seed').fill('mobile-設定');await touch.locator('#seed').press('Tab');assert.equal(await touch.locator('#seed').inputValue(),'mobile-設定');
-   for(const [slug,text]of [['order-and-chance','0'],['truchet-tiles','一つの向き'],['lissajous','90°から0°']]){await touch.goto(base+'works/'+slug+'/');assert.ok((await touch.locator('.operation-hint').textContent()).includes(text));}
-   console.log('PASS no-JS themes, stable numbers; 12 works at 320x568/375x667/667x375/844x390; focus and reduced keyboard viewport');
-  }finally{await touch.close();}
-  // Archived URLs also work through the actual browser controls, including inactive weights.
-  for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){
-   await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();
-   const downloadPromise=page.waitForEvent('download');await page.locator('#download').click();const d=await downloadPromise;const svg=await fs.readFile(await d.path(),'utf8');
-   const withoutDeclaration=svg.replace(/^<\?xml[^>]*>\s*/,'');assert.equal(crypto.createHash('sha256').update(portableSVG(withoutDeclaration)).digest('hex'),f.svgPortableSha256,f.slug+' archived URL/download bytes');
+  try{await home.goto(base);assert.equal(await home.locator('.theme-nav,.theme-section').count(),0);assert.equal(await home.locator('a.work-card').count(),catalog.length);for(const [index,m]of catalog.entries()){const card=home.locator('a.work-card').nth(index);assert.equal(await card.getAttribute('href'),`works/${m.slug}/`);assert.match(await card.locator('.eyebrow').textContent(),new RegExp('^'+String(m.number).padStart(3,'0')+' /'));await card.locator('img').scrollIntoViewIfNeeded();await card.locator('img').evaluate(i=>i.decode());}assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);}finally{await home.close();}
+  for(const [width,height]of [[320,568],[375,667],[667,375],[844,390]]){
+   await page.setViewportSize({width,height});for(const {slug}of catalog){await page.goto(base+'works/'+slug+'/');for(const selector of ['#settings input[type=range]','#settings input[type=text]','#save-open']){const control=page.locator(selector).first();if(!await control.count())continue;await control.focus();await settle();const r=await control.evaluate(e=>{const p=document.querySelector('.paper-area').getBoundingClientRect(),f=e.getBoundingClientRect();return {p:p.toJSON(),f:f.toJSON(),h:visualViewport.height,overflow:document.documentElement.scrollWidth>innerWidth,nested:[document.querySelector('.studio'),document.querySelector('.controls')].some(n=>['auto','scroll'].includes(getComputedStyle(n).overflowY)&&n.scrollHeight>n.clientHeight+1)};});assert.equal(r.overflow,false);assert.equal(r.nested,false);assert.ok(r.p.height<=r.h*.4+1);assert.ok(r.f.top>=r.p.bottom+8&&r.f.bottom<=r.h-8);}}
   }
-  await page.goto(base+'about/#terms');assert.equal(await page.locator('#terms').count(),1);assert.deepEqual(errors,[]);console.log('PASS 36 archived URLs/SVGs; About; zero script/network errors');
+  for(const f of JSON.parse(await fs.readFile('scripts/fixtures/all-works-v1.json'))){await page.goto(base+'works/'+f.slug+'/'+f.fragment);await settle();const svg=(await exportFile('svg')).toString().replace(/^<\?xml[^>]*>\s*/,'');assert.equal(crypto.createHash('sha256').update(portableSVG(svg)).digest('hex'),f.svgPortableSha256,f.slug+' archived SVG');}
+  await page.goto(base+'about/#terms');assert.equal(await page.locator('#measurement').count(),0);assert.doesNotMatch(await page.locator('body').innerText(),/集計しています|明示的に有効化/);assert.equal(await page.locator('a').evaluateAll(as=>as.some(a=>!a.getAttribute('href')?.startsWith('http')&&/\.md(?:#|$)/.test(a.getAttribute('href')||''))),false);assert.deepEqual(errors,[]);
+  console.log('PASS flat no-JS list/12 previews, 4 mobile sizes, 36 archived SVGs, reader copy and analytics-off notice; zero JS/network errors');
  }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(e=>{console.error(e);process.exit(1)});

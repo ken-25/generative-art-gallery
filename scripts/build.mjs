@@ -5,12 +5,6 @@ export const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&l
 const root=process.cwd();
 const base=new URL(process.env.SITE_URL || 'https://ken-25.github.io/generative-art-gallery/');
 if(!['https:','http:'].includes(base.protocol)||base.search||base.hash||base.username||base.password||!base.pathname.endsWith('/')) throw Error('SITE_URL must be an absolute directory URL');
-export const themes=Object.freeze([
- {key:'randomness',title:'ゆらぎと密度',description:'規則に偶然を加え、集まり方を変える。'},
- {key:'lines',title:'線と流れ',description:'周期や向きを動かして、線がつくる表情を探す。'},
- {key:'structure',title:'反復と構造',description:'同じ形を重ね、向きやつながりを組み合わせる。'}
-]);
-export const themeFor=m=>themes.some(t=>t.key===m.theme)?m.theme:'other';
 export async function catalog(directory) {
  const result=[];
  for(const entry of await readdir(directory,{withFileTypes:true})) {
@@ -20,7 +14,6 @@ export async function catalog(directory) {
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(m.slug)||m.slug!==entry.name||result.some(x=>x.slug===m.slug)) throw Error('Invalid or duplicate slug');
   for(const key of ['title','description','addedAt','preview']) if(typeof m[key]!=='string'||!m[key].trim()) throw Error('Missing '+key);
   if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(m.addedAt)||!Number.isFinite(Date.parse(m.addedAt))||new Date(m.addedAt).toISOString()!==m.addedAt.replace('Z','.000Z')) throw Error('Invalid date');
-  if(m.theme!==undefined&&(typeof m.theme!=='string'||!m.theme.trim()))throw Error('Invalid theme');
   if(!Array.isArray(m.tags)||!m.tags.length||m.tags.some(t=>typeof t!=='string'||!t.trim())) throw Error('Invalid tags');
   if(!Array.isArray(m.sources)||!m.sources.length) throw Error('Missing sources');
   for(const s of m.sources) if(typeof s.label!=='string'||!s.label.trim()||!/^https?:$/.test(new URL(s.url).protocol)) throw Error('Invalid source');
@@ -70,19 +63,16 @@ export async function build() {
  if(!googleTagId)await rm('dist/assets/analytics.js',{force:true});
  const infos=await Promise.all(works.map(m=>imageInfo(path.join(root,'works',m.slug,m.preview))));
  const number=i=>String(i+1).padStart(3,'0');
- const card=(m,i)=>`<a class="work-card" href="works/${m.slug}/"><div class="card-art"><img src="works/${m.slug}/${m.preview}" width="320" height="320" ${i?'loading="lazy"':'fetchpriority="high"'} alt="${escape(m.title)}のプレビュー" style="width:100%;height:100%;object-fit:contain"></div><div class="card-copy"><p class="eyebrow">${number(i)} / ${escape(m.tags.join(' · ').toUpperCase())}</p><h4>${escape(m.title)}</h4><p>${escape(m.description)}</p><span class="text-link">作品をひらく →</span></div></a>`;
- const groups=[...themes,{key:'other',title:'その他の作品',description:'テーマをまたいで、気になる形を見つける。'}].map(t=>({...t,items:works.map((m,i)=>({m,i})).filter(({m})=>themeFor(m)===t.key)})).filter(t=>t.items.length);
- const links=groups.map(t=>`<a href="#theme-${t.key}">${escape(t.title)}<span>${t.items.length}作品</span></a>`).join('');
- const cards=groups.map(t=>`<section class="theme-section" id="theme-${t.key}" aria-labelledby="theme-title-${t.key}"><div class="section-heading"><h3 id="theme-title-${t.key}">${escape(t.title)}</h3><span>${t.items.length} WORKS</span></div><p class="theme-description">${escape(t.description)}</p>${t.items.map(({m,i})=>card(m,i)).join('\n')}</section>`).join('\n');
-
- let home=await readFile('templates/index.html','utf8'); home=home.replace('<!-- THEME_LINKS -->',()=>links).replace('<!-- WORK_CARDS -->',()=>cards).replace('<!-- WORK_COUNT -->',()=>String(works.length).padStart(2,'0')+' WORKS');
+ const card=(m,i)=>`<a class="work-card" href="works/${m.slug}/"><div class="card-art"><img src="works/${m.slug}/${m.preview}" width="320" height="320" ${i?'loading="lazy"':'fetchpriority="high"'} alt="${escape(m.title)}のプレビュー" style="width:100%;height:100%;object-fit:contain"></div><div class="card-copy"><p class="eyebrow">${number(i)} / ${escape(m.tags.join(' · ').toUpperCase())}</p><h3>${escape(m.title)}</h3><p>${escape(m.description)}</p><span class="text-link">作品をひらく →</span></div></a>`;
+ const cards=works.map((m,i)=>card(m,i)).join('\n');
+ let home=await readFile('templates/index.html','utf8'); home=home.replace('<!-- WORK_CARDS -->',()=>cards).replace('<!-- WORK_COUNT -->',()=>String(works.length).padStart(2,'0')+' WORKS');
  await writeFile('dist/index.html',seo(home,'Generative Art Gallery — 規則と偶然のあいだ','規則と偶然を、手で動かして眺めるジェネラティブアートのギャラリー。',base.href,new URL(`works/${works[0].slug}/${works[0].preview}`,base).href,infos[0]));
  for(const [i,m] of works.entries()) {
   const file=`dist/works/${m.slug}/index.html`;
   let html=await readFile(file,'utf8'); html=html.replace(/(<p class="eyebrow">)\d{3} /,`$1${number(i)} /`);
   await writeFile(file,seo(html,m.title+' — Generative Art Gallery',m.description,new URL(`works/${m.slug}/`,base).href,new URL(`works/${m.slug}/${m.preview}`,base).href,infos[i]));
  }
- await writeFile('dist/about/index.html',seo(await readFile('about/index.html','utf8'),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,new URL(`works/${works[0].slug}/${works[0].preview}`,base).href,infos[0]));
+ await writeFile('dist/about/index.html',seo((await readFile('about/index.html','utf8')).replace('<!-- MEASUREMENT -->',()=>googleTagId?'<section class="terms" id="measurement"><h2>アクセス計測について</h2><p>サイト改善のため、アクセスや保存・共有の利用状況を集計しています。</p><p>Google AnalyticsとCookie等を利用します。詳しくは<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>をご覧ください。</p></section>':''),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,new URL(`works/${works[0].slug}/${works[0].preview}`,base).href,infos[0]));
  await writeFile('dist/catalog.json',JSON.stringify(works.map((m,i)=>({...m,number:i+1,url:new URL(`works/${m.slug}/`,base).href})),null,2)+'\n');
  await writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${['','about/',...works.map(m=>`works/${m.slug}/`)].map(p=>`<url><loc>${escape(new URL(p,base).href)}</loc></url>`).join('')}</urlset>`);
  console.log(`Built ${works.length} works → dist/ (${base.href})`);
