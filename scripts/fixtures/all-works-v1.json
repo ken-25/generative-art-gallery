@@ -1225,5 +1225,50 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22target%22%3A1500%2C%22stickiness%22%3A1%2C%22origin%22%3A%22point%22%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22dla-001%22%7D%7D",
     "svgSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee",
     "svgPortableSha256": "b3afe48951944d1bb87055ca3d631278a02c49b885a4d396fbad4d5b70c1c7ee"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 6,
+      "rotation": 0,
+      "zoom": 1.4,
+      "outline": 0.6,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A6%2C%22rotation%22%3A0%2C%22zoom%22%3A1.4%2C%22outline%22%3A0.6%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "9a7db21c3ed6223364a76cd6fe35ad178df01d46f9f8b911c65d511b9dd83c7a",
+    "svgPortableSha256": "9a7db21c3ed6223364a76cd6fe35ad178df01d46f9f8b911c65d511b9dd83c7a"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 0,
+      "rotation": 0,
+      "zoom": 0.5,
+      "outline": 0,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A0%2C%22rotation%22%3A0%2C%22zoom%22%3A0.5%2C%22outline%22%3A0%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "82e1ef80588a0b6b3efadb4e2fea75088e2c4d8fb8db317f6478f02be18db998",
+    "svgPortableSha256": "82e1ef80588a0b6b3efadb4e2fea75088e2c4d8fb8db317f6478f02be18db998"
+  },
+  {
+    "slug": "penrose-triangles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "depth": 7,
+      "rotation": 359,
+      "zoom": 3,
+      "outline": 2,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22depth%22%3A7%2C%22rotation%22%3A359%2C%22zoom%22%3A3%2C%22outline%22%3A2%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c",
+    "svgPortableSha256": "6f30dea0feeb46d138d11245d33fbef2ebd8327c91f1f3b5d588c0a12f2bf06c"
   }
 ]
