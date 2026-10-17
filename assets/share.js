@@ -80,7 +80,8 @@
   const shareURL=()=>{const url=new URL(destination.href);url.pathname=url.pathname.replace(/index\.html$/,'');url.hash=encode(read(),G);return url.href;};
   const refreshURL=()=>{urlField.value=shareURL();};
   for(const [key,text]of [['x','X'],['line','LINE'],['facebook','Facebook']]){
-   const b=button('share-'+key,text);b.dataset.social=key;query('.social-links').append(b);
+   const b=button('share-'+key,text);b.dataset.social=key;b.title='新しいタブで開きます';
+   const note=document.createElement('span');note.className='external-link-note';note.textContent='（新しいタブ）';b.append(note);query('.social-links').append(b);
    b.addEventListener('click',()=>{if(!dialog.open||dialog.dataset.mode!=='share')return;window.open(socialLinks(shareURL(),title)[key],'_blank','noopener,noreferrer');track('share_social',key);});
   }
   let busy=false,prepared=null,revision=0,session=0,copySequence=0,opener=null,locked=null;

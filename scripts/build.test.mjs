@@ -11,6 +11,8 @@ test('catalog ordering, independent additions and validation',async()=>{
    await writeFile(`${dir}/${slug}/manifest.json`,JSON.stringify(m));
   }
   assert.deepEqual((await catalog(dir)).map(m=>m.slug),['alpha','beta']);
+  const sourceFile=`${dir}/alpha/index.html`;await writeFile(sourceFile,(await readFile(sourceFile,'utf8'))+'<a href="mailto:hello@example.org">mail</a><a href="//example.org/reference">source</a><a href="/generative-art-gallery/about/">about</a>');
+  assert.equal((await catalog(dir)).length,2);
   const file=`${dir}/alpha/manifest.json`, original=JSON.parse(await readFile(file));
   for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]}]){
    await writeFile(file,JSON.stringify({...original,...patch}));await assert.rejects(catalog(dir));
@@ -41,7 +43,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   const html=await readFile(`${dir}/dist/index.html`,'utf8'),map=await readFile(`${dir}/dist/sitemap.xml`,'utf8');
   const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`));assert.equal(list.length,baseline+2);assert.ok(html.includes(String(baseline+2).padStart(2,'0')+' WORKS'));assert.ok(html.includes('&lt;b&gt; &amp; &quot; title $$ $&amp; $`'));
   for(const slug of ['alpha','beta'])assert.ok((await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8')).includes('<title>&lt;b&gt; &amp; &quot; title $$ $&amp; $` — Generative Art Gallery</title>'));
-  for(const slug of ['alpha','beta']){assert.match(html,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp(String(m.number).padStart(3,'0')+' /'));}
+  for(const slug of ['alpha','beta']){assert.match(html,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const rendered=await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8');assert.match(rendered,/target="_blank" rel="noopener noreferrer"/);assert.match(rendered,/class="external-link-note">（新しいタブ）/);const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp(String(m.number).padStart(3,'0')+' /'));}
   assert.doesNotMatch(html,/<script/);assert.match(html,/fetchpriority="high"/);
   assert.doesNotMatch(html,/theme-nav|theme-section/);assert.equal((html.match(/class="work-card"/g)||[]).length,baseline+2);assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
   execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-TEST000000'}});
