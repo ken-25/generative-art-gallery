@@ -4,6 +4,10 @@ test('special cases: d=0 is a circle of radius R-r, R=2r with d=r is a segment',
  const circle=G.geometry({...G.defaults,R:90,r:30,d:0,curves:1,rotation:0}),k=circle.scale;
  for(const [x,y]of circle.curves[0])assert(close(Math.hypot(x-450,y-300),60*k,1e-6));
  for(const [x,y]of G.geometry({...G.defaults,R:80,r:40,d:40,curves:1,rotation:0}).curves[0])assert(close(y,300,1e-6));
+ // With d=0 the circle is drawn once, even when r/gcd(R,r) would ask for many turns.
+ for(const [R,r]of [[120,119],[7,3],[90,30]]){const g=G.geometry({...G.defaults,R,r,d:0,curves:1});assert.equal(g.period,2*Math.PI);
+  const pts=g.curves[0],a=pts.map(([x,y])=>Math.atan2(y-300,x-450));let turned=0;for(let i=1;i<a.length;i++){let da=a[i]-a[i-1];if(da>Math.PI)da-=2*Math.PI;if(da<-Math.PI)da+=2*Math.PI;turned+=da;}
+  assert(close(Math.abs(turned),2*Math.PI,1e-9),R+'/'+r+' one turn');assert(pts.length-1<900&&pts.length-1>=96,'samples '+pts.length);for(const [x,y]of pts)assert(close(Math.hypot(x-450,y-300),270,1e-6));}
 });
 test('closes after 2πr/gcd(R,r) and not before; every curve fits the viewBox',()=>{
  for(const [R,r]of [[96,60],[7,3],[120,1],[120,119],[100,25]]){

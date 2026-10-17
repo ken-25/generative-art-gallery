@@ -8,7 +8,8 @@
  const point=(R,r,d,t)=>[(R-r)*Math.cos(t)+d*Math.cos((R-r)*t/r),(R-r)*Math.sin(t)-d*Math.sin((R-r)*t/r)];
  function geometry(s){
   if(!(s.r<s.R))return {curves:[],rejected:true};
-  const {R,r,d}=s,period=2*Math.PI*r/gcd(R,r),scale=RADIUS/(R-r+d);
+  // With d=0 the point is the rolling circle's centre, which closes its circle after one turn.
+  const {R,r,d}=s,period=d?2*Math.PI*r/gcd(R,r):2*Math.PI,scale=RADIUS/(R-r+d);
   // Bound the arc length by the largest speed so neighbouring samples stay about SEGMENT units apart on screen.
   const speed=(R-r)+d*(R-r)/r,n=Math.min(MAX_POINTS,Math.max(MIN_POINTS,Math.ceil(period*speed*scale/SEGMENT)));
   const base=Array.from({length:n+1},(_,i)=>point(R,r,d,i===n?period:period*i/n));
