@@ -7,14 +7,14 @@ test('catalog ordering, independent additions and validation',async()=>{
  try {
   for(const slug of ['alpha','beta']) {
    await cp('works/lissajous',`${dir}/${slug}`,{recursive:true});
-   const m=JSON.parse(await readFile(`${dir}/${slug}/manifest.json`));m.slug=slug;
+   const m=JSON.parse(await readFile(`${dir}/${slug}/manifest.json`));m.slug=slug;m.number=slug==='alpha'?1:2;
    await writeFile(`${dir}/${slug}/manifest.json`,JSON.stringify(m));
   }
   assert.deepEqual((await catalog(dir)).map(m=>m.slug),['alpha','beta']);
   const sourceFile=`${dir}/alpha/index.html`;await writeFile(sourceFile,(await readFile(sourceFile,'utf8'))+'<a href="mailto:hello@example.org">mail</a><a href="//example.org/reference">source</a><a href="/generative-art-gallery/about/">about</a>');
   assert.equal((await catalog(dir)).length,2);
   const file=`${dir}/alpha/manifest.json`, original=JSON.parse(await readFile(file));
-  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]}]){
+  for(const patch of [{slug:'../x'},{addedAt:'2026-02-30T00:00:00Z'},{title:''},{preview:'../x.svg'},{sources:[]},{tags:[]},{number:undefined},{number:0},{number:1.5},{number:'1'},{number:2}]){
    await writeFile(file,JSON.stringify({...original,...patch}));await assert.rejects(catalog(dir));
   }
   assert.equal(escape('<script>"&'), '&lt;script&gt;&quot;&amp;');
@@ -35,7 +35,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   }
   for(const slug of ['alpha','beta']){
    await cp('works/lissajous',`${dir}/works/${slug}`,{recursive:true});
-   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
+   const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.number=slug==='alpha'?901:902;m.title='<b> & " title $$ $& $`';await writeFile(file,JSON.stringify(m));
   }
   const run=()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,GOOGLE_TAG_ENABLED:'',GOOGLE_TAG_ID:'',SITE_URL:'https://example.org/sub/'}});
   const snapshot=async(folder)=>{const files={};for(const e of await readdir(folder,{withFileTypes:true})){const p=path.join(folder,e.name);if(e.isDirectory())Object.assign(files,await snapshot(p));else files[path.relative(dir,p)]=(await readFile(p)).toString('base64');}return files;};

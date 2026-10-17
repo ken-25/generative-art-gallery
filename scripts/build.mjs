@@ -13,6 +13,9 @@ export async function catalog(directory) {
   const folder=path.join(directory,entry.name);
   const m=JSON.parse(await readFile(path.join(folder,'manifest.json'),'utf8'));
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(m.slug)||m.slug!==entry.name||result.some(x=>x.slug===m.slug)) throw Error('Invalid or duplicate slug');
+  // The artwork number is a permanent ID stored with the work, so later additions never renumber existing works.
+  if(!Number.isInteger(m.number)||m.number<1||m.number>999) throw Error('Invalid number: '+m.slug);
+  const taken=result.find(x=>x.number===m.number);if(taken) throw Error(`Duplicate number ${m.number}: ${taken.slug}, ${m.slug}`);
   for(const key of ['title','description','addedAt','preview']) if(typeof m[key]!=='string'||!m[key].trim()) throw Error('Missing '+key);
   if(!/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ$/.test(m.addedAt)||!Number.isFinite(Date.parse(m.addedAt))||new Date(m.addedAt).toISOString()!==m.addedAt.replace('Z','.000Z')) throw Error('Invalid date');
   if(!Array.isArray(m.tags)||!m.tags.length||m.tags.some(t=>typeof t!=='string'||!t.trim())) throw Error('Invalid tags');
@@ -31,7 +34,7 @@ export async function catalog(directory) {
   }
   result.push(m);
  }
- return result.sort((a,b)=>a.addedAt.localeCompare(b.addedAt)||a.slug.localeCompare(b.slug));
+ return result.sort((a,b)=>a.number-b.number);
 }
 export function tagId(value='') {
  const id=value.trim();if(id&&!/^(G|GT)-[A-Z0-9]{6,20}$/.test(id))throw Error('GOOGLE_TAG_ID must be a valid G- or GT- tag ID');return id;
@@ -79,7 +82,7 @@ export async function build() {
  for(const file of ['assets','works','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md']) await cp(file,path.join('dist',file),{recursive:true});
  if(!googleTagId)await rm('dist/assets/analytics.js',{force:true});
  const infos=new Map(await Promise.all(works.map(async m=>[m.slug,await imageInfo(path.join(root,'works',m.slug,m.preview))])));
- const numbers=new Map(works.map((m,i)=>[m.slug,i+1])),number=m=>String(numbers.get(m.slug)).padStart(3,'0');
+ const number=m=>String(m.number).padStart(3,'0');
  const image=m=>m&&new URL(`works/${m.slug}/${m.preview}`,base).href;
  const card=(m,i,prefix)=>`<a class="work-card" href="${prefix}works/${m.slug}/"><div class="card-art"><img src="${prefix}works/${m.slug}/${m.preview}" width="320" height="320" ${i?'loading="lazy"':'fetchpriority="high"'} alt="${escape(m.title)}のプレビュー" style="width:100%;height:100%;object-fit:contain"></div><div class="card-copy"><p class="eyebrow">${number(m)} / ${escape(m.tags.join(' · ').toUpperCase())}</p><h3>${escape(m.title)}</h3><p>${escape(m.description)}</p><span class="text-link">作品をひらく →</span></div></a>`;
  const template=await readFile('templates/index.html','utf8'),ordered=newestFirst(works),pages=paginate(ordered);
@@ -99,7 +102,7 @@ export async function build() {
   await writeFile(file,seo(html,m.title+' — Generative Art Gallery',m.description,new URL(`works/${m.slug}/`,base).href,image(m),infos.get(m.slug)));
  }
  await writeFile('dist/about/index.html',seo((await readFile('about/index.html','utf8')).replace('<!-- MEASUREMENT -->',()=>googleTagId?'<section class="terms" id="measurement"><h2>アクセス計測について</h2><p>サイト改善のため、アクセスや保存・共有の利用状況を集計しています。</p><p>Google AnalyticsとCookie等を利用します。詳しくは<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>をご覧ください。</p></section>':''),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,image(ordered[0]),infos.get(ordered[0]?.slug)));
- await writeFile('dist/catalog.json',JSON.stringify(works.map(m=>({...m,number:numbers.get(m.slug),url:new URL(`works/${m.slug}/`,base).href})),null,2)+'\n');
+ await writeFile('dist/catalog.json',JSON.stringify(works.map(m=>({...m,url:new URL(`works/${m.slug}/`,base).href})),null,2)+'\n');
  await writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...pages.map((_,i)=>pagePath(i+1)),'about/',...works.map(m=>`works/${m.slug}/`)].map(p=>`<url><loc>${escape(new URL(p,base).href)}</loc></url>`).join('')}</urlset>`);
  console.log(`Built ${works.length} works on ${pages.length} list page(s) → dist/ (${base.href})`);
 }

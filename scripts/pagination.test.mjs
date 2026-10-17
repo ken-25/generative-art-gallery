@@ -30,7 +30,7 @@ async function site(count){
  for(let i=0;i<count;i++){
   const source=existing[i%existing.length],slug=i<existing.length?source.slug:`extra-${String(i).padStart(2,'0')}`;
   await cp(`works/${source.slug}`,`${dir}/works/${slug}`,{recursive:true});
-  if(slug!==source.slug){const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.addedAt=`2027-01-01T00:00:${String(i%60).padStart(2,'0')}Z`;await writeFile(file,JSON.stringify(m));}
+  if(slug!==source.slug){const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));m.slug=slug;m.number=100+i;m.addedAt=`2027-01-01T00:00:${String(i%60).padStart(2,'0')}Z`;await writeFile(file,JSON.stringify(m));}
  }
  return dir;
 }
@@ -41,8 +41,8 @@ test('static list pages: 41 works give 20+20+1 newest-first pages with own canon
  try{
   build(dir);
   const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`)),ordered=newestFirst(list);
-  assert.deepEqual(list.map(m=>m.number),list.map((_,i)=>i+1));
-  const original=await catalog(path.resolve('works'));for(const m of original)assert.equal(list.find(x=>x.slug===m.slug).number,original.indexOf(m)+1,m.slug+' keeps its number');
+  assert.equal(new Set(list.map(m=>m.number)).size,41);assert.deepEqual(list.map(m=>m.number),[...list.map(m=>m.number)].sort((a,b)=>a-b));
+  const original=await catalog(path.resolve('works'));for(const m of original)assert.equal(list.find(x=>x.slug===m.slug).number,m.number,m.slug+' keeps its number');
   const files=['index.html','page/2/index.html','page/3/index.html'],seen=[];
   for(const [i,file] of files.entries()){
    const html=await readFile(`${dir}/dist/${file}`,'utf8'),canonical=`https://example.org/sub/${pagePath(i+1)}`;
@@ -83,5 +83,24 @@ test('an empty gallery still builds a list, About and sitemap without assuming a
   assert.match(html,/class="empty-state">作品はまだありません。/);assert.match(html,/00 WORKS/);assert.doesNotMatch(html,/class="pagination"|og:image/);
   assert.doesNotMatch(await readFile(`${dir}/dist/about/index.html`,'utf8'),/og:image|undefined/);assert.deepEqual(JSON.parse(await readFile(`${dir}/dist/catalog.json`)),[]);
   assert.match(await readFile(`${dir}/dist/sitemap.xml`,'utf8'),/<loc>https:\/\/example.org\/sub\/<\/loc>/);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('adding works at the same time, in the past or in parallel never renumbers existing works',async()=>{
+ const original=await catalog(path.resolve('works')),dir=await site(original.length);
+ try{
+  const lissajous=original.find(m=>m.slug==='lissajous');
+  // Two branches add works independently: one shares lissajous's addedAt and sorts before it, one predates everything.
+  for(const [slug,addedAt,number]of [['aaa-same',lissajous.addedAt,201],['zz-past','2000-01-01T00:00:00Z',202]]){
+   await cp('works/lissajous',`${dir}/works/${slug}`,{recursive:true});const file=`${dir}/works/${slug}/manifest.json`,m=JSON.parse(await readFile(file));
+   Object.assign(m,{slug,addedAt,number});await writeFile(file,JSON.stringify(m));
+  }
+  build(dir);const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`));
+  for(const m of original){assert.equal(list.find(x=>x.slug===m.slug).number,m.number,m.slug);assert.match(await readFile(`${dir}/dist/works/${m.slug}/index.html`,'utf8'),new RegExp(`<p class="eyebrow">${String(m.number).padStart(3,'0')} / `));}
+  const pages=(await Promise.all(['index.html','page/2/index.html'].map(f=>readFile(`${dir}/dist/${f}`,'utf8')))).join('');
+  assert.match(pages,/href="(?:\.\.\/\.\.\/)?works\/lissajous\/"[^]*?<p class="eyebrow">003 \//);
+  // A collision between two parallel additions fails the build instead of silently renumbering.
+  const file=`${dir}/works/zz-past/manifest.json`,m=JSON.parse(await readFile(file));m.number=201;await writeFile(file,JSON.stringify(m));
+  assert.throws(()=>execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/'},stdio:'pipe'}),/Duplicate number 201/);
  }finally{await rm(dir,{recursive:true,force:true});}
 });

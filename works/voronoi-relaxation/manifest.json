@@ -1,5 +1,6 @@
 {
   "slug": "voronoi-relaxation",
+  "number": 23,
   "title": "近い点の領域",
   "description": "平面を、いちばん近い点ごとに分ける。点を領域の重心へ動かすたび、分割が整っていく。",
   "addedAt": "2026-10-17T22:00:00Z",

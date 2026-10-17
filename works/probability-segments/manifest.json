@@ -1,5 +1,6 @@
 {
   "slug": "probability-segments",
+  "number": 12,
   "title": "三つの分布",
   "description": "領域ごとの密度と方向の重みから、短い線の群れを作る。",
   "addedAt": "2026-10-16T11:20:00Z",

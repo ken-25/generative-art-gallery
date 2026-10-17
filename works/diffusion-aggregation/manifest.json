@@ -1,5 +1,6 @@
 {
   "slug": "diffusion-aggregation",
+  "number": 21,
   "title": "さまよって付く",
   "description": "でたらめに歩く粒子が、塊に触れたところで止まる。先に伸びた枝ほど、次の粒子を受け止める。",
   "addedAt": "2026-10-17T20:00:00Z",

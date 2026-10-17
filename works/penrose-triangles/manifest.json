@@ -1,5 +1,6 @@
 {
   "slug": "penrose-triangles",
+  "number": 22,
   "title": "繰り返さない秩序",
   "description": "黄金比で三角形を分け続けると、どこまでも同じ並びを繰り返さない敷き詰めが現れる。",
   "addedAt": "2026-10-17T21:00:00Z",

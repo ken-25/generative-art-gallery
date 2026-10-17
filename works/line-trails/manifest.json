@@ -1,5 +1,6 @@
 {
   "slug": "line-trails",
+  "number": 5,
   "title": "線の航跡",
   "description": "帯ごとの流れに沿って、折れ線が進み、ときどき戻る。",
   "addedAt": "2026-10-16T11:13:00Z",

@@ -1,5 +1,6 @@
 {
   "slug": "rolling-circles",
+  "number": 14,
   "title": "転がる円の軌跡",
   "description": "固定した円の内側を、小さな円が転がる。円の上の一点が花のような閉曲線を描く。",
   "addedAt": "2026-10-17T13:00:00Z",

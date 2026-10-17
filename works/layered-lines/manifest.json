@@ -1,5 +1,6 @@
 {
   "slug": "layered-lines",
+  "number": 7,
   "title": "角度の重なり",
   "description": "三つの領域に、角度の異なる線群を重ねる。",
   "addedAt": "2026-10-16T11:15:00Z",
