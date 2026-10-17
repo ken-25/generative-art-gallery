@@ -16,7 +16,7 @@ cの実部・虚部、右の図の表示中心と拡大率、最大反復数、�
 
 ## 参考資料
 
-- [Douady・Hubbard『Étude dynamique des polynômes complexes』英訳（Cornell大学公開）](https://pi.math.cornell.edu/~hubbard/OrsayEnglish.pdf)
+- [Douady・Hubbardのオルセー講義録 英訳（Cornell大学公開）](https://pi.math.cornell.edu/~hubbard/OrsayEnglish.pdf)
 
 反復と逃走判定の原理を参照して実装したもので、資料の図版やコードは取り込んでいません。
 
