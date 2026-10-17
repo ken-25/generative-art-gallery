@@ -27,9 +27,9 @@
   return Object.freeze(api);
  }
  const palette={label:'配色',options:{fern:'葉',clay:'土',dusk:'夕'}};
- // Linear blend of two #rrggbb colors, t in [0,1].
  // Uniform unit vector by rejection sampling: avoids Math.cos/sin, whose last bit differs between engines.
  function direction(rng){for(;;){const x=rng()*2-1,y=rng()*2-1,d=x*x+y*y;if(d>1e-6&&d<=1){const m=Math.sqrt(d);return [x/m,y/m];}}}
+ // Linear blend of two #rrggbb colors, t in [0,1].
  const mix=(a,b,t)=>'#'+[1,3,5].map(i=>Math.round(parseInt(a.slice(i,i+2),16)*(1-t)+parseInt(b.slice(i,i+2),16)*t).toString(16).padStart(2,'0')).join('');
  const api=Object.freeze({rng,escape,palettes,create,palette,mix,direction});
  if(typeof module!=='undefined')module.exports=api;

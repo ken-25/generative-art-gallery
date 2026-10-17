@@ -18,12 +18,13 @@
   if(container===form)form.insertBefore(div,actions);else container.append(div);
   fields.set(key,{input,output,div,definition});
  }
- let current=G.defaults,frame,job;
+ let current=G.defaults,frame,job,jobKey;
  const caption=document.createElement('p');caption.id='art-note';caption.className='art-note';caption.setAttribute('role','status');if(G.note)form.before(caption);
  const show=s=>{art.innerHTML=G.svg(s);art.removeAttribute('aria-busy');if(G.note)caption.textContent=G.note(s);};
  // Heavy studies compute in short chunks between frames; a newer setting cancels the old job so it never overwrites the view.
  function compute(s){
-  job?.cancel();job=G.task?.(s);if(!job){show(s);return;}
+  const key=JSON.stringify(s);if(job&&jobKey===key)return;
+  job?.cancel();job=G.task?.(s);jobKey=key;if(!job){show(s);return;}
   const mine=job;art.setAttribute('aria-busy','true');if(G.note)caption.textContent='計算中…';
   const run=()=>{if(job!==mine)return;const end=performance.now()+12;let done=false;while(!done&&performance.now()<end)done=mine.step();if(job!==mine)return;if(done){job=null;show(s);}else setTimeout(run,0);};
   run();
