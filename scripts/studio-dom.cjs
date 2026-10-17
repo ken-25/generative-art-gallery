@@ -43,7 +43,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400)errors.push(`${r.status()} ${new URL(r.url()).pathname}`);});
   const state=()=>page.evaluate(()=>({svg:document.querySelector('#art').innerHTML,settings:[...document.querySelector('form').elements].filter(e=>e.name).map(e=>[e.name,e.type==='radio'?e.checked:e.value])}));
-  const settle=()=>page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  const settle=()=>page.evaluate(()=>new Promise(resolve=>{const wait=()=>requestAnimationFrame(()=>requestAnimationFrame(()=>document.querySelector('#art[aria-busy=true]')?setTimeout(wait,10):resolve()));wait();}));
   const closeDialog=async()=>{if(await page.locator('#studio-dialog').evaluate(d=>d.open)){await page.locator('#dialog-close').click();await page.waitForFunction(()=>!document.getElementById('studio-dialog').open);await settle();}};
   const openDialog=async mode=>{const current=await page.locator('#studio-dialog').evaluate(d=>({open:d.open,mode:d.dataset.mode}));if(current.open&&current.mode!==mode)await closeDialog();if(!current.open||current.mode!==mode)await page.locator(mode==='save'?'#save-open':'#share-open').click();};
   const format=async value=>{await openDialog('save');if(await page.locator('#save-format').inputValue()!==value)await page.locator('#save-format').selectOption(value);};
@@ -69,7 +69,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   for(const width of [1440,375]){
    await page.setViewportSize({width,height:1000});
    for(const {slug,url:canonical}of catalog){
-    const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();}
+    const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();await settle();}
     const initial=await state();await verifyContract(slug);
     assert.equal(await page.locator('#actions>button').count(),2);assert.deepEqual(await page.locator('#actions>button').allTextContents(),['保存','共有']);assert.equal(await page.locator('#actions input,#actions select,#actions textarea,#actions #new-seed,#actions button[type=reset]').count(),0);
     assert.equal(await page.locator('#studio-dialog').evaluate(d=>d.open),false);assert.equal(await page.locator('script[data-google-tag-id]').count(),0);

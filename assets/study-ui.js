@@ -18,11 +18,20 @@
   if(container===form)form.insertBefore(div,actions);else container.append(div);
   fields.set(key,{input,output,div,definition});
  }
- let current=G.defaults,frame;
+ let current=G.defaults,frame,job;
+ const caption=document.createElement('p');caption.id='art-note';caption.className='art-note';caption.setAttribute('role','status');if(G.note)form.before(caption);
+ const show=s=>{art.innerHTML=G.svg(s);art.removeAttribute('aria-busy');if(G.note)caption.textContent=G.note(s);};
+ // Heavy studies compute in short chunks between frames; a newer setting cancels the old job so it never overwrites the view.
+ function compute(s){
+  job?.cancel();job=G.task?.(s);if(!job){show(s);return;}
+  const mine=job;art.setAttribute('aria-busy','true');if(G.note)caption.textContent='計算中…';
+  const run=()=>{if(job!==mine)return;const end=performance.now()+12;let done=false;while(!done&&performance.now()<end)done=mine.step();if(job!==mine)return;if(done){job=null;show(s);}else setTimeout(run,0);};
+  run();
+ }
  const read=()=>Object.fromEntries([...fields].map(([k,{input}])=>[k,input.value]));
  const sync=()=>{for(const [k,{input}]of fields)input.value=current[k];};
  function render(){
-  current=G.normalize(read());art.innerHTML=G.svg(current);
+  current=G.normalize(read());compute(current);
   for(const [key,{input,output,div,definition}]of fields){if(output)output.value=current[key]+definition.unit;const active=!definition.active||definition.active(current);div.hidden=!active;input.disabled=!active;}
   for(const group of groups.values())group.parentElement.hidden=![...group.querySelectorAll('.field')].some(f=>!f.hidden);
  }

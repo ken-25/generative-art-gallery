@@ -1,0 +1,21 @@
+{
+  "slug": "rolling-circles",
+  "title": "転がる円の軌跡",
+  "description": "固定した円の内側を、小さな円が転がる。円の上の一点が花のような閉曲線を描く。",
+  "addedAt": "2026-10-17T13:00:00Z",
+  "tags": [
+    "mathematics",
+    "curve"
+  ],
+  "preview": "preview.webp",
+  "sources": [
+    {
+      "label": "Körei・Szilágyiの研究論文（2022）の内トロコイドの式(2)",
+      "url": "https://www.teaching.matf.bg.ac.rs/vol/tm2521.pdf"
+    },
+    {
+      "label": "Denys Fisherの特許 US3230624A（1966年公開）",
+      "url": "https://patents.google.com/patent/US3230624A/en"
+    }
+  ]
+}

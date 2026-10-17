@@ -808,5 +808,107 @@
     "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22sites%22%3A5%2C%22rings%22%3A15%2C%22ink%22%3A36%2C%22water%22%3A36%2C%22drift%22%3A12%2C%22wave%22%3A60%2C%22wavelength%22%3A400%2C%22angle%22%3A179%2C%22tines%22%3A9%2C%22pull%22%3A120%2C%22palette%22%3A%22dusk%22%2C%22seed%22%3A%22ink-001%22%7D%7D",
     "svgSha256": "68a559b2e83ed7287a59233d134bb9e64a25afbe285ce466c3e993f67a562ab9",
     "svgPortableSha256": "68a559b2e83ed7287a59233d134bb9e64a25afbe285ce466c3e993f67a562ab9"
+  },
+  {
+    "slug": "rolling-circles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "R": 96,
+      "r": 60,
+      "d": 54,
+      "rotation": 0,
+      "curves": 3,
+      "phase": 15,
+      "width": 1.2,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22R%22%3A96%2C%22r%22%3A60%2C%22d%22%3A54%2C%22rotation%22%3A0%2C%22curves%22%3A3%2C%22phase%22%3A15%2C%22width%22%3A1.2%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "ecd8a79e7fecb9b499d295cb679bed55407a6223ce62d2bd241ddf924e2cdc3c",
+    "svgPortableSha256": "ecd8a79e7fecb9b499d295cb679bed55407a6223ce62d2bd241ddf924e2cdc3c"
+  },
+  {
+    "slug": "rolling-circles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "R": 2,
+      "r": 1,
+      "d": 0,
+      "rotation": 0,
+      "curves": 1,
+      "phase": 0,
+      "width": 0.4,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22R%22%3A2%2C%22r%22%3A1%2C%22d%22%3A0%2C%22rotation%22%3A0%2C%22curves%22%3A1%2C%22phase%22%3A0%2C%22width%22%3A0.4%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "d9a05949e907e767b29ea100e8eb0c42d5d63296a5d95aa0f288eca4e7e09455",
+    "svgPortableSha256": "d9a05949e907e767b29ea100e8eb0c42d5d63296a5d95aa0f288eca4e7e09455"
+  },
+  {
+    "slug": "rolling-circles",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "R": 120,
+      "r": 119,
+      "d": 120,
+      "rotation": 359,
+      "curves": 6,
+      "phase": 180,
+      "width": 4,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22R%22%3A120%2C%22r%22%3A119%2C%22d%22%3A120%2C%22rotation%22%3A359%2C%22curves%22%3A6%2C%22phase%22%3A180%2C%22width%22%3A4%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "deccca8fa8407aaf8c5ae51414def3c21f2180f1205cfe4b10ee75ede24af6ab",
+    "svgPortableSha256": "deccca8fa8407aaf8c5ae51414def3c21f2180f1205cfe4b10ee75ede24af6ab"
+  },
+  {
+    "slug": "branching-rules",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rule": "alternate",
+      "generations": 6,
+      "angle": 24,
+      "shrink": 0.82,
+      "width": 2.4,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rule%22%3A%22alternate%22%2C%22generations%22%3A6%2C%22angle%22%3A24%2C%22shrink%22%3A0.82%2C%22width%22%3A2.4%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "0b679ae803e1f484b1843eec9f97070c0086347e9b5d6a8c3bc14141fbe9ff52",
+    "svgPortableSha256": "ceae3f499c5b38179ce8e802b99db902fc4278e5472f9668aa984cb502bd2e8f"
+  },
+  {
+    "slug": "branching-rules",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rule": "alternate",
+      "generations": 0,
+      "angle": 0,
+      "shrink": 0.4,
+      "width": 0.5,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rule%22%3A%22alternate%22%2C%22generations%22%3A0%2C%22angle%22%3A0%2C%22shrink%22%3A0.4%2C%22width%22%3A0.5%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "c46abf73cc43b13ee1d7ed925eadb6899122b4e57ee42c94e69c477fe20ea65f",
+    "svgPortableSha256": "c46abf73cc43b13ee1d7ed925eadb6899122b4e57ee42c94e69c477fe20ea65f"
+  },
+  {
+    "slug": "branching-rules",
+    "file": "generator.js",
+    "key": "StudyGenerator",
+    "settings": {
+      "rule": "alternate",
+      "generations": 12,
+      "angle": 90,
+      "shrink": 1,
+      "width": 6,
+      "palette": "fern"
+    },
+    "fragment": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22rule%22%3A%22alternate%22%2C%22generations%22%3A12%2C%22angle%22%3A90%2C%22shrink%22%3A1%2C%22width%22%3A6%2C%22palette%22%3A%22fern%22%7D%7D",
+    "svgSha256": "f72d2be475a8d3fc60a860f496411a5303e3b5b2c219c01b4323046a7903de4f",
+    "svgPortableSha256": "f72d2be475a8d3fc60a860f496411a5303e3b5b2c219c01b4323046a7903de4f"
   }
 ]
