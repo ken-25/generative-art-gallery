@@ -95,7 +95,7 @@ export async function build() {
  }
  for(const m of works) {
   const file=`dist/works/${m.slug}/index.html`;
-  let html=await readFile(file,'utf8'); html=html.replace(/(<p class="eyebrow">)\d{3} /,`$1${number(m)} /`);
+  let html=await readFile(file,'utf8'); html=html.replace(/(<p class="eyebrow">)\d{3} \//,`$1${number(m)} /`);
   await writeFile(file,seo(html,m.title+' — Generative Art Gallery',m.description,new URL(`works/${m.slug}/`,base).href,image(m),infos.get(m.slug)));
  }
  await writeFile('dist/about/index.html',seo((await readFile('about/index.html','utf8')).replace('<!-- MEASUREMENT -->',()=>googleTagId?'<section class="terms" id="measurement"><h2>アクセス計測について</h2><p>サイト改善のため、アクセスや保存・共有の利用状況を集計しています。</p><p>Google AnalyticsとCookie等を利用します。詳しくは<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>をご覧ください。</p></section>':''),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,image(ordered[0]),infos.get(ordered[0]?.slug)));
