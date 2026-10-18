@@ -17,11 +17,11 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
  const server=http.createServer(async(req,res)=>{
   try{
    const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
-   if(!pathname.startsWith(prefix)){res.writeHead(404).end();return;}
-   let file=path.resolve(root,pathname.slice(prefix.length));
+   const relative=pathname.startsWith(prefix)?pathname.slice(prefix.length):pathname.slice(1);
+   let file=path.resolve(root,relative);
    if(file!==root&&!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
    if((await fs.stat(file)).isDirectory())file=path.join(file,'index.html');
-   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml'};
+   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon'};
    res.setHeader('Content-Type',types[path.extname(file)]||'text/plain');res.end(await fs.readFile(file));
   }catch{res.writeHead(404).end();}
  });
@@ -70,6 +70,8 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    await page.setViewportSize({width,height:1000});
    for(const {slug,url:canonical}of catalog){
     const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();await settle();}
+    assert.equal(await page.locator('.brand-mark').count(),1);await page.locator('.brand-mark').evaluate(i=>i.decode());assert.equal(await page.locator('.brand-mark').getAttribute('alt'),'');assert.equal(await page.locator('link[rel=icon]').count(),3);assert.equal(new URL(await page.locator('link[rel=icon][sizes="16x16"]').getAttribute('href'),page.url()).href,base+'assets/brand/favicon-16.png');
+    await page.locator('#save-open').hover();assert.equal(await page.locator('#save-open').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(48, 71, 51)');await page.mouse.move(0,0);
     const initial=await state();await verifyContract(slug);
     assert.equal(await page.locator('#actions>button').count(),2);assert.deepEqual(await page.locator('#actions>button').allTextContents(),['保存','共有']);assert.equal(await page.locator('#actions input,#actions select,#actions textarea,#actions #new-seed,#actions button[type=reset]').count(),0);
     assert.equal(await page.locator('#studio-dialog').evaluate(d=>d.open),false);assert.equal(await page.locator('script[data-google-tag-id]').count(),0);
@@ -168,6 +170,18 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   // Missing clipboard, share, and canShare APIs retain manual copy and download routes.
   await page.goto(probability);await page.evaluate(()=>{for(const key of ['clipboard','share','canShare'])Object.defineProperty(navigator,key,{configurable:true,value:undefined});});await openDialog('share');await page.locator('#copy-link').click();assert.match(await page.locator('#dialog-status').textContent(),/手動/);await page.locator('#share-png').click();await page.waitForFunction(()=>document.getElementById('dialog-status').textContent.includes('対応していません'));await closeDialog();assert.equal((await exportFile()).subarray(0,8).toString('hex'),'89504e470d0a1a0a');
   console.log('PASS modal Escape/backdrop/close/focus/Tab/scroll, copy fallback, delayed clipboard, activation retry, interrupted download/reopen/settings snapshot');
+  // The README root server and the public Pages subpath use the same build output.
+  const mountContext=await browser.newContext({javaScriptEnabled:false,viewport:{width:375,height:667}}),mountPage=await mountContext.newPage();
+  try{
+   let mounted=0;const rootURL=new URL('/',base).href;
+   for(const mount of [rootURL,base])for(const route of [...listRoutes,'about/',...catalog.map(m=>'works/'+m.slug+'/')]){
+    assert.equal((await mountPage.goto(mount+route)).status(),200);await mountPage.locator('.brand-mark').evaluate(i=>i.decode());assert.equal(await mountPage.locator('.brand-mark').evaluate(i=>i.naturalWidth),32);
+    const paths=await mountPage.locator('link[rel=icon],.brand-mark').evaluateAll(es=>es.map(e=>e.getAttribute(e.tagName==='IMG'?'src':'href')));assert.equal(paths.length,4);
+    for(const relative of paths){assert.ok(!relative.startsWith('/'));const asset=new URL(relative,mountPage.url());assert.ok(asset.href.startsWith(mount+'assets/brand/'));assert.equal((await mountPage.request.get(asset.href)).status(),200);}
+    mounted++;
+   }
+   console.log(`PASS brand mark and all favicon references on ${mounted} pages across README root and Pages subpath mounts`);
+  }finally{await mountContext.close();}
   // The generated link policy works without JavaScript, including a real blank-target popup.
   const linksContext=await browser.newContext({javaScriptEnabled:false,viewport:{width:375,height:667}});
   await linksContext.route('https://github.com/**',route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>External destination fixture</title><p>Fixture</p>'}));

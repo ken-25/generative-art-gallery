@@ -2,6 +2,7 @@ import {readFile,writeFile,readdir,mkdir,cp,rm,stat} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {externalLinks} from './external-links.mjs';
+import {brandHead,brandHeader} from './brand.mjs';
 export const escape = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const root=process.cwd();
 const base=new URL(process.env.SITE_URL || 'https://ken-25.github.io/generative-art-gallery/');
@@ -58,8 +59,8 @@ export async function imageInfo(file) {
 }
 export function seo(html,title,description,url,image,info={}) {
  html=html.replace(/<title>.*?<\/title>/s,'').replace(/<meta name="description"[^>]*>/g,'');
- const tags=`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}">${image?`<meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}">${image?`<meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">`:''}${googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-enabled="true" data-google-tag-id="${googleTagId}"></script>`:''}`;
- return externalLinks(html.replace('</head>',()=>tags+'</head>'),url,base.href);
+ const tags=brandHead(base.href,url)+`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}">${image?`<meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}">${image?`<meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">`:''}${googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-enabled="true" data-google-tag-id="${googleTagId}"></script>`:''}`;
+ return externalLinks(brandHeader(html,base.href,url).replace('</head>',()=>tags+'</head>'),url,base.href);
 }
 export const PAGE_SIZE=20;
 // Newest first by first-publication time; ties keep the slug order. Numbers stay chronological IDs.
