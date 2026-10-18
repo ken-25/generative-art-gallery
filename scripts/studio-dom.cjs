@@ -21,7 +21,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    let file=path.resolve(root,pathname.slice(prefix.length));
    if(file!==root&&!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
    if((await fs.stat(file)).isDirectory())file=path.join(file,'index.html');
-   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml'};
+   const types={'.html':'text/html; charset=utf-8','.js':'text/javascript','.css':'text/css','.json':'application/json','.webp':'image/webp','.svg':'image/svg+xml','.png':'image/png','.ico':'image/x-icon'};
    res.setHeader('Content-Type',types[path.extname(file)]||'text/plain');res.end(await fs.readFile(file));
   }catch{res.writeHead(404).end();}
  });
@@ -70,6 +70,8 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
    await page.setViewportSize({width,height:1000});
    for(const {slug,url:canonical}of catalog){
     const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();await settle();}
+    assert.equal(await page.locator('.brand-mark').count(),1);await page.locator('.brand-mark').evaluate(i=>i.decode());assert.equal(await page.locator('.brand-mark').getAttribute('alt'),'');assert.equal(await page.locator('link[rel=icon]').count(),3);assert.equal(await page.locator('link[rel=icon][sizes="16x16"]').getAttribute('href'),prefix+'assets/brand/favicon-16.png');
+    await page.locator('#save-open').hover();assert.equal(await page.locator('#save-open').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(48, 71, 51)');await page.mouse.move(0,0);
     const initial=await state();await verifyContract(slug);
     assert.equal(await page.locator('#actions>button').count(),2);assert.deepEqual(await page.locator('#actions>button').allTextContents(),['保存','共有']);assert.equal(await page.locator('#actions input,#actions select,#actions textarea,#actions #new-seed,#actions button[type=reset]').count(),0);
     assert.equal(await page.locator('#studio-dialog').evaluate(d=>d.open),false);assert.equal(await page.locator('script[data-google-tag-id]').count(),0);
