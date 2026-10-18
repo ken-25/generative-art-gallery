@@ -15,7 +15,16 @@ test('favicon ICO embeds the exact optical 16px and 32px PNGs',async()=>{
  }
 });
 test('common brand markup preserves the site label and respects a Pages subpath',()=>{
- const site='https://example.org/gallery/sub/',input='<a class="brand" href="../../index.html">GENERATIVE ART GALLERY<span>規則と偶然のあいだ</span></a>',html=brandHeader(input,site);
- assert.match(html,/src="\/gallery\/sub\/assets\/brand\/mark-32.svg"/);assert.match(html,/width="32" height="32" alt="" aria-hidden="true"/);assert.match(html,/href="\.\.\/\.\.\/index.html"/);assert.ok(html.includes('GENERATIVE ART GALLERY<span>規則と偶然のあいだ</span>'));assert.equal(brandHeader(html,site),html);
- const head=brandHead(site);for(const file of ['favicon.ico','favicon-16.png','favicon-32.png'])assert.ok(head.includes('/gallery/sub/assets/brand/'+file));assert.equal((head.match(/rel="icon"/g)||[]).length,3);
+ const site='https://example.org/gallery/sub/',input='<a class="brand" href="../../index.html">GENERATIVE ART GALLERY<span>規則と偶然のあいだ</span></a>',page=site+'works/example/',html=brandHeader(input,site,page);
+ assert.match(html,/src="\.\.\/\.\.\/assets\/brand\/mark-32.svg"/);assert.match(html,/width="32" height="32" alt="" aria-hidden="true"/);assert.match(html,/href="\.\.\/\.\.\/index.html"/);assert.ok(html.includes('GENERATIVE ART GALLERY<span>規則と偶然のあいだ</span>'));assert.equal(brandHeader(html,site,page),html);
+ const head=brandHead(site);for(const file of ['favicon.ico','favicon-16.png','favicon-32.png'])assert.ok(head.includes('href="assets/brand/'+file+'"'));assert.equal((head.match(/rel="icon"/g)||[]).length,3);
+});
+
+test('one public build keeps brand assets relative for root and Pages-subpath serving',()=>{
+ const site='https://ken-25.github.io/generative-art-gallery/';
+ for(const route of ['', 'page/2/', 'about/', 'works/example/', 'works/example/index.html']){
+  const page=new URL(route,site).href,html=brandHead(site,page)+brandHeader('<a class="brand" href="index.html">Gallery</a>',site,page);
+  const paths=[...html.matchAll(/(?:src|href)="([^"]*assets\/brand\/[^"]+)"/g)].map(m=>m[1]);assert.equal(paths.length,4);
+  for(const mount of ['http://localhost:8000/',site])for(const link of paths){assert.ok(!link.startsWith('/'));const actual=new URL(link,new URL(route,mount));assert.equal(actual.href,new URL('assets/brand/'+link.split('/').at(-1),mount).href);}
+ }
 });
