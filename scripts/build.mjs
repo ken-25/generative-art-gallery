@@ -57,9 +57,9 @@ export async function imageInfo(file) {
  }
  return {width,height,type:({'.webp':'image/webp','.png':'image/png','.jpg':'image/jpeg','.svg':'image/svg+xml'})[ext]};
 }
-export function seo(html,title,description,url,image,info={}) {
+export function seo(html,title,description,url,image,info={}, {analytics=true}={}) {
  html=html.replace(/<title>.*?<\/title>/s,'').replace(/<meta name="description"[^>]*>/g,'');
- const tags=brandHead(base.href,url)+`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}">${image?`<meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}">${image?`<meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">`:''}${googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-enabled="true" data-google-tag-id="${googleTagId}"></script>`:''}`;
+ const tags=brandHead(base.href,url)+`<title>${escape(title)}</title><meta name="description" content="${escape(description)}"><link rel="canonical" href="${escape(url)}"><meta property="og:type" content="website"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(description)}"><meta property="og:url" content="${escape(url)}">${image?`<meta property="og:image" content="${escape(image)}"><meta property="og:image:alt" content="${escape(title)}の固定プレビュー">${info.width&&info.height?`<meta property="og:image:width" content="${info.width}"><meta property="og:image:height" content="${info.height}">`:''}${info.type?`<meta property="og:image:type" content="${info.type}">`:''}`:''}<meta property="og:locale" content="ja_JP"><meta name="twitter:card" content="summary"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(description)}">${image?`<meta name="twitter:image" content="${escape(image)}"><meta name="twitter:image:alt" content="${escape(title)}の固定プレビュー">`:''}${analytics&&googleTagId?`<script defer src="${escape(new URL('assets/analytics.js',base).pathname)}" data-google-tag-enabled="true" data-google-tag-id="${googleTagId}"></script>`:''}`;
  return externalLinks(brandHeader(html,base.href,url).replace('</head>',()=>tags+'</head>'),url,base.href);
 }
 export const PAGE_SIZE=20;
@@ -80,7 +80,7 @@ export function pagination(n,total,count,start,prefix) {
 export async function build() {
  const works=await catalog(path.join(root,'works'));
  await rm('dist',{recursive:true,force:true}); await mkdir('dist');
- for(const file of ['assets','works','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md']) await cp(file,path.join('dist',file),{recursive:true});
+ for(const file of ['assets','works','answers','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md']) await cp(file,path.join('dist',file),{recursive:true});
  if(!googleTagId)await rm('dist/assets/analytics.js',{force:true});
  const infos=new Map(await Promise.all(works.map(async m=>[m.slug,await imageInfo(path.join(root,'works',m.slug,m.preview))])));
  const number=m=>String(m.number).padStart(3,'0');
@@ -103,8 +103,9 @@ export async function build() {
   await writeFile(file,seo(html,m.title+' — Generative Art Gallery',m.description,new URL(`works/${m.slug}/`,base).href,image(m),infos.get(m.slug)));
  }
  await writeFile('dist/about/index.html',seo((await readFile('about/index.html','utf8')).replace('<!-- MEASUREMENT -->',()=>googleTagId?'<section class="terms" id="measurement"><h2>アクセス計測について</h2><p>サイト改善のため、アクセスや保存・共有の利用状況を集計しています。</p><p>Google AnalyticsとCookie等を利用します。詳しくは<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>をご覧ください。</p></section>':''),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,image(ordered[0]),infos.get(ordered[0]?.slug)));
+ await writeFile('dist/answers/index.html',seo(await readFile('answers/index.html','utf8'),'答えから生まれる一枚 — Generative Art Gallery','三つの選択から、線と色の一枚を描く小さな試作。',new URL('answers/',base).href,new URL('works/rolling-circles/preview.webp',base).href,{}, {analytics:false}));
  await writeFile('dist/catalog.json',JSON.stringify(works.map(m=>({...m,url:new URL(`works/${m.slug}/`,base).href})),null,2)+'\n');
- await writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...pages.map((_,i)=>pagePath(i+1)),'about/',...works.map(m=>`works/${m.slug}/`)].map(p=>`<url><loc>${escape(new URL(p,base).href)}</loc></url>`).join('')}</urlset>`);
+ await writeFile('dist/sitemap.xml',`<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${[...pages.map((_,i)=>pagePath(i+1)),'about/','answers/',...works.map(m=>`works/${m.slug}/`)].map(p=>`<url><loc>${escape(new URL(p,base).href)}</loc></url>`).join('')}</urlset>`);
  console.log(`Built ${works.length} works on ${pages.length} list page(s) → dist/ (${base.href})`);
 }
 if(process.argv[1] && path.resolve(process.argv[1])===fileURLToPath(import.meta.url)) await build();

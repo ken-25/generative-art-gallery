@@ -54,3 +54,5 @@ select:focus-visible,textarea:focus-visible{outline:3px solid var(--focus);outli
 .paper[aria-busy=true] svg{opacity:.55;transition:opacity .2s}.art-note{font-size:11px;line-height:1.8;color:var(--primary);margin:0 0 18px;min-height:1.8em}
 
 .brand-mark{display:block;flex:0 0 32px;width:32px;height:32px}.brand-wordmark{display:block;min-width:0}
+
+.answer-entry{padding:26px;margin-bottom:48px;border:1px solid var(--decorative-border);background:var(--surface)}.answer-entry h2{font-size:22px;font-weight:500}.answer-entry p{font-size:12px;line-height:2;color:var(--text-muted)}.answer-entry a{display:inline-block;padding:12px 0;color:var(--primary)}
