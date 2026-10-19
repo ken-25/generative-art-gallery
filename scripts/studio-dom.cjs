@@ -68,6 +68,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
   };
   for(const width of [1440,375]){
    await page.setViewportSize({width,height:1000});
+   await require('./answers-dom.cjs')({page,base,width,exportFile,closeDialog,settle});
    for(const {slug,url:canonical}of catalog){
     const url=base+'works/'+slug+'/';for(const suffix of ['','index.html']){assert.equal((await page.goto(url+suffix)).status(),200);await page.locator('#art svg').waitFor();await settle();}
     assert.equal(await page.locator('.brand-mark').count(),1);await page.locator('.brand-mark').evaluate(i=>i.decode());assert.equal(await page.locator('.brand-mark').getAttribute('alt'),'');assert.equal(await page.locator('link[rel=icon]').count(),3);assert.equal(new URL(await page.locator('link[rel=icon][sizes="16x16"]').getAttribute('href'),page.url()).href,base+'assets/brand/favicon-16.png');

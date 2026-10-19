@@ -1,0 +1,110 @@
+{
+  "gentle/single/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "fb8ede7407e95e90a2ac85e7ee027df5f5306927aa43b53d1ebb0424af8e80bc"
+  },
+  "gentle/single/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "983922dc354f1971e523e5a3f067c520b8ca5700253e576642b44508458802f6"
+  },
+  "gentle/single/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "c9b2a78d70442d4a38347c454220142dcca4db58be74028116839956374190e8"
+  },
+  "gentle/woven/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "3fbc24b67a19468d01cb53055af675713bc13f12038923a24d9820af60be65b7"
+  },
+  "gentle/woven/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "404733a70fc81169b81ec7f8edc6b936b6aa9c408a9382538179fea66b0b34be"
+  },
+  "gentle/woven/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "c9978a60748fe6164af57072654f1871c6a769f488507f5d96eaf901b7bd4561"
+  },
+  "gentle/rich/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "58c2bbe06af72bf345f15b52ee5805cd93abb3c28afc78e645bc845bf9b5338b"
+  },
+  "gentle/rich/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "57d58044e6024fd1b8ab19946e3dabbc6103fe855ebe5ef2fa869b51323888a5"
+  },
+  "gentle/rich/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22gentle%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "d29b5a46602ebf06b13bf7c31f7d31d2f17533ce92e41a11ab9a1e378a04f124"
+  },
+  "light/single/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "f6cc59316e924c72d391a2e287450c3fc9cde8f5b7c1a184a80bf0c1600aff3b"
+  },
+  "light/single/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "876597998fcf1f71e3f3861621d72cbe8486dbc13c7ce7015493ffd0f4e560b0"
+  },
+  "light/single/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "e3e3c8ce24212e934df5965296e8e601df5fc98370b1aa104540bdca3ac636f0"
+  },
+  "light/woven/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "0cfa32818846c606c5aa0323b0386917c3fd05accc3a0fc6e4207006fe7f37fd"
+  },
+  "light/woven/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "4357a675bd00c0535dca5505f87e4b759a1c400a6baf5ea69bb8f129f6c8e8b2"
+  },
+  "light/woven/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "9f89f542ec8f167584c593f25aabd128d275a86af68c8d028612bfaa02f6076f"
+  },
+  "light/rich/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "b9886d58ac8130b82f9440ecaea24853dfa2c695e17a6acc6e94ecdab9100283"
+  },
+  "light/rich/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "d56938dcfd0a354715170eea75c48df190ef0cabc1e3fe53464bc45a0db8ce29"
+  },
+  "light/rich/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22light%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "3da33d220e4f48dbe9c9908d00ecc73a2ab2a7c0bd5b5af0fec118819a3cdb94"
+  },
+  "bold/single/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "564782d91aa805f2a14ca716be7e543ecc5226851c12e4b9dad631a83ea50762"
+  },
+  "bold/single/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "1d4d8a63089c67f39598ca166eabde785d4e69a545a0c365930450fe553934f7"
+  },
+  "bold/single/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22single%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "40e26b6257c345497baebdfc659e9642bb85a78e038f4ef006fd934d3eb4fa78"
+  },
+  "bold/woven/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "1c4e858f6e0a0613867e117e6177952017858ea8aacb44b891d4420c92637ed0"
+  },
+  "bold/woven/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "6a3fcc76f6ac847f823f636b4a99b000f8f2892ee3adc5c3839b477deb93459d"
+  },
+  "bold/woven/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22woven%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "bdafd9cc87d6ff35afe2c0e3a11cf983d0579730578fc460eaa2543a890e7b89"
+  },
+  "bold/rich/leaves": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22leaves%22%7D%7D",
+    "svg": "5b40520adad098e7dad2fce8170f4b517cf9411bd90594ab0fe800a0864021ca"
+  },
+  "bold/rich/earth": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22earth%22%7D%7D",
+    "svg": "e07790af6005f00e65ba8210cedeb88344fa5d184b2eb1cd135bd929e3f6073c"
+  },
+  "bold/rich/evening": {
+    "url": "#art=%7B%22format%22%3A1%2C%22generator%22%3A1%2C%22settings%22%3A%7B%22pace%22%3A%22bold%22%2C%22layers%22%3A%22rich%22%2C%22scene%22%3A%22evening%22%7D%7D",
+    "svg": "8a9f337009df3c13dfb4883d8cd0478a13cde5f9e983037ca2d4142e547984ea"
+  }
+}
