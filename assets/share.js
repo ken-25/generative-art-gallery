@@ -188,7 +188,7 @@
 
   const dialog=document.createElement('dialog');dialog.id='studio-dialog';dialog.className='studio-dialog';dialog.setAttribute('aria-labelledby','dialog-title');
   dialog.innerHTML=`<header class="dialog-header"><h2 id="dialog-title"></h2><button type="button" id="dialog-close" aria-label="閉じる">閉じる</button></header>
-   <section id="save-panel"><label for="save-format">保存形式</label><select id="save-format"><option value="png">PNG画像</option><option value="svg">SVG画像</option><option value="dxf">DXF（CAD用の線データ）</option></select>
+   <section id="save-panel"><label for="save-format">保存形式</label><select id="save-format"><option value="png">PNG画像</option><option value="svg">SVG画像</option><option value="dxf">DXF</option></select>
    <label class="png-resolution" for="png-size">PNGのサイズ<select id="png-size"><option value="1600">標準（長辺1600px）</option><option value="2400">高解像度（長辺2400px）</option></select></label>
    <p class="dialog-note">PNGは画像として、SVGは設定も含めて、DXFはCADで編集できる線として保存できます。</p><button type="button" class="primary" id="download-file">ダウンロード</button><button type="button" id="copy-svg">SVGコードをコピー</button>
    <label id="svg-code-label" hidden>SVGコード（選択してコピーできます）<textarea id="svg-code" readonly rows="4"></textarea></label></section>
