@@ -8,6 +8,7 @@ const crypto=require('node:crypto');
 const portableSVG=require('./svg-compat.cjs');
 const comparePNG=require('./png-reference.cjs');
 const {inspectControls,legacy}=require('./control-contract.cjs');
+const {dxf}=require('../assets/share.js');
 (async()=>{
  const root=path.resolve('dist'),catalog=JSON.parse(await fs.readFile(path.join(root,'catalog.json')));
  // List pages are newest first, 20 per page; artwork numbers stay chronological.
@@ -86,7 +87,7 @@ const {inspectControls,legacy}=require('./control-contract.cjs');
     if(slug==='hex-transitions'){await page.locator('#states').fill('4');await page.locator('#states').dispatchEvent('change');await page.locator('#w33').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await page.locator('#states').fill('2');await page.locator('#states').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:enabled').count(),4);assert.equal(await page.locator('#w33').inputValue(),'23');}
     if(slug==='probability-segments'){await page.locator('#directions').fill('6');await page.locator('#directions').dispatchEvent('change');await page.locator('#w5').evaluate(e=>{e.value='23';e.dispatchEvent(new Event('input',{bubbles:true}));});await page.locator('#directions').fill('2');await page.locator('#directions').dispatchEvent('change');assert.equal(await page.locator('input[name^=w]:not([name=width]):enabled').count(),2);assert.equal(await page.locator('#w5').inputValue(),'23');}
     if(await seed.count()){const before=await seed.inputValue();await page.locator('#new-seed').click();assert.notEqual(await seed.inputValue(),before);await seed.fill('日本語 & # / % " <>');await seed.dispatchEvent('change');await settle();}
-    const expected=await state(),svg=(await exportFile('svg')).toString();assert.match(svg,/<metadata>/);await format('svg');await page.locator('#copy-svg').click();assert.equal(await page.evaluate(()=>window.__copied),svg);await closeDialog();
+    const expected=await state(),svg=(await exportFile('svg')).toString();assert.match(svg,/<metadata>/);assert.equal((await exportFile('dxf')).toString(),dxf(svg),slug+' DXF');await format('svg');await page.locator('#copy-svg').click();assert.equal(await page.evaluate(()=>window.__copied),svg);await closeDialog();
     const png=await exportFile();assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');assert.equal(Math.max(png.readUInt32BE(16),png.readUInt32BE(20)),1600);const pixels=await verifyPixels(svg,png,slug+' changed');assert.notEqual(pixels.pixelHash,initialPixels.pixelHash);
     const beforeOpen=await page.evaluate(()=>window.__copyCalls||0);await openDialog('share');assert.equal(await page.evaluate(()=>window.__copyCalls||0),beforeOpen,'opening never copies');const shared=await page.locator('#share-url').inputValue();await page.locator('#copy-link').click();assert.equal(await page.evaluate(()=>window.__copied),shared);
     if(await seed.count())assert.equal(JSON.parse(decodeURIComponent(new URL(shared).hash.slice(5))).settings.seed,'日本語 & # / % " <>');

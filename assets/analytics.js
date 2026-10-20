@@ -13,8 +13,8 @@
  gtag('set',{page_location:clean.href,page_referrer:'',page_title:document.title});
  gtag('config',id,{send_page_view:false,page_location:clean.href,page_referrer:'',allow_google_signals:false,allow_ad_personalization_signals:false});
  gtag('event','page_view',{page_location:clean.href,page_referrer:'',page_title:document.title});
- const events=new Set(['download_svg','download_png','share_link','share_native','share_image','share_social']);
- const methods=new Set(['svg','png','copy','native','x','line','facebook']);
+ const events=new Set(['download_svg','download_png','download_dxf','share_link','share_native','share_image','share_social']);
+ const methods=new Set(['svg','png','dxf','copy','native','x','line','facebook']);
  window.GalleryAnalytics=Object.freeze({track:(event,method)=>{if(events.has(event)&&methods.has(method))gtag('event',event,{method,page_location:clean.href,page_referrer:''});}});
  const remote=document.createElement('script');remote.async=true;remote.referrerPolicy='no-referrer';remote.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);document.head.append(remote);
 })();
