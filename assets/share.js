@@ -167,7 +167,7 @@
    const link=new URL(base);link.searchParams.set(param,url);if(key==='x')link.searchParams.set('text',title);result[key]=link.href;
   }return result;
  }
- function attach(G,render) {
+ function attach(G,render,output={}) {
   const form=document.getElementById('settings'),actions=document.getElementById('actions')||document.createElement('div');
   const destination=new URL(location.href);destination.search='';destination.hash='';form.action=destination.href;
   const read=()=>Object.fromEntries(Object.keys(G.defaults).map(k=>[k,form.elements.namedItem(k).value]));
@@ -176,7 +176,7 @@
   const button=(id,text)=>{const b=document.createElement('button');b.type='button';b.id=id;b.textContent=text;return b;};
   const generation=document.createElement('fieldset');generation.className='generation-settings';
   const legend=document.createElement('legend');legend.textContent='生成の設定';generation.append(legend);
-  const seed=form.elements.namedItem('seed');if(seed)generation.append(seed.closest('.field'));
+  const seed=form.elements.namedItem('seed');if(seed?.closest('.field'))generation.append(seed.closest('.field'));
   const row=document.createElement('div');row.className='button-row';
   for(const b of [document.getElementById('new-seed'),form.querySelector('button[type=reset]')])if(b)row.append(b);
   if(row.children.length===1)row.classList.add('single');generation.append(row);
@@ -195,10 +195,15 @@
    <section id="share-panel" hidden><button type="button" id="copy-link">リンクをコピー</button><button type="button" id="share-native">端末でリンクを共有</button><button type="button" id="share-png">現在のPNGを共有</button>
    <nav class="social-links" aria-label="SNSでリンクを共有"></nav><label for="share-url">共有URL<textarea id="share-url" readonly rows="3"></textarea></label>
    <p class="dialog-note">リンクのカードは作品の固定プレビューです。調整した絵はPNGで保存・共有できます。</p></section><p id="dialog-status" role="status" aria-live="polite"></p>`;
+  if(output.formats){
+   const select=dialog.querySelector('#save-format');select.replaceChildren();
+   for(const [value,label] of output.formats){const option=document.createElement('option');option.value=value;option.textContent=label;select.append(option);}
+   dialog.querySelector('#save-panel .dialog-note').textContent='PNGは現在の視点の画像、STLは立体の形状を保存します。';
+  }
   document.body.append(dialog);
   const query=s=>dialog.querySelector(s),status=query('#dialog-status'),savePanel=query('#save-panel'),sharePanel=query('#share-panel'),format=query('#save-format'),size=query('#png-size'),download=query('#download-file'),imageShare=query('#share-png'),nativeShare=query('#share-native'),urlField=query('#share-url'),svgCode=query('#svg-code');
   query('#share-native').hidden=typeof navigator.share!=='function';
-  const shareURL=()=>{const url=new URL(destination.href);url.pathname=url.pathname.replace(/index\.html$/,'');url.hash=encode(read(),G);return url.href;};
+  const shareURL=()=>{if(output.shareURL)return output.shareURL(G.normalize(read()));const url=new URL(destination.href);url.pathname=url.pathname.replace(/index\.html$/,'');url.hash=encode(read(),G);return url.href;};
   const refreshURL=()=>{urlField.value=shareURL();};
   for(const [key,text]of [['x','X'],['line','LINE'],['facebook','Facebook']]){
    const b=button('share-'+key,text);b.dataset.social=key;
@@ -206,7 +211,7 @@
    b.addEventListener('click',()=>{if(!dialog.open||dialog.dataset.mode!=='share')return;window.open(socialLinks(shareURL(),title)[key],'_blank','noopener,noreferrer');track('share_social',key);});
   }
   let busy=false,prepared=null,revision=0,session=0,copySequence=0,opener=null,locked=null;
-  const imageKey=()=>JSON.stringify(G.normalize(read()))+'|'+size.value;
+  const imageKey=()=>JSON.stringify(G.normalize(read()))+'|'+size.value+'|'+(output.imageKey?.()||'');
   const active=token=>dialog.open&&session===token;
   const invalidatePNG=()=>{revision++;copySequence++;prepared=null;imageShare.textContent='現在のPNGを共有';query('#svg-code-label').hidden=true;svgCode.value='';if(dialog.open){refreshURL();status.textContent='';}};
   const syncBusy=()=>{download.disabled=imageShare.disabled=nativeShare.disabled=busy;};
@@ -257,17 +262,20 @@
    if(busy||!dialog.open)return;busy=true;syncBusy();status.textContent='PNGを準備しています。';
    const token=session,version=revision;
    try{
-    const key=imageKey(),edge=Number(size.value);if(!await drawn()||!active(token))return;status.textContent='PNGを準備しています。';const snapshot={key,svg:G.svg(G.normalize(read())),edge};
-    let file=prepared?.key===snapshot.key?prepared.file:null;if(!file)file=new File([await pngBlob(snapshot.svg,snapshot.edge)],slug+'.png',{type:'image/png'});
+    const key=imageKey(),edge=Number(size.value);if(!await drawn()||!active(token))return;status.textContent='PNGを準備しています。';const snapshot={key,svg:output.pngBlob?null:G.svg(G.normalize(read())),edge};
+    let file=prepared?.key===snapshot.key?prepared.file:null;if(!file)file=new File([await (output.pngBlob?output.pngBlob(snapshot.edge):pngBlob(snapshot.svg,snapshot.edge))],slug+'.png',{type:'image/png'});
     if(version===revision&&imageKey()===snapshot.key){prepared={key:snapshot.key,file};imageShare.textContent='準備済みPNGを共有';}
     if(active(token))await action(file,token);
-   }catch{if(active(token))status.textContent='PNGを作成できませんでした。SVG保存やリンクコピーもご利用ください。';}
+   }catch{if(active(token))status.textContent='PNGを作成できませんでした。ほかの保存形式やリンクコピーもご利用ください。';}
    finally{finishBusy(token);}
   };
   download.addEventListener('click',()=>{
    if(!dialog.open||dialog.dataset.mode!=='save'||busy)return;
    if(format.value==='png')withPNG(async(file,token)=>{if(!active(token))return;save(file,slug+'.png');status.textContent='PNGの保存を開始しました。';track('download_png','png');});
-   else{const token=session,kind=format.value;busy=true;syncBusy();drawn().then(same=>{if(!same||!active(token))return;const svg=G.svg(G.normalize(read()));
+   else{const token=session,kind=format.value;busy=true;syncBusy();drawn().then(same=>{if(!same||!active(token))return;if(output.download){
+     try{save(output.download(kind),slug+'.'+kind);status.textContent=kind.toUpperCase()+'の保存を開始しました。';}catch{status.textContent='保存できませんでした。';}return;
+    }
+    const svg=G.svg(G.normalize(read()));
     if(kind==='dxf'){try{save(new Blob([dxf(svg)],{type:'application/dxf'}),slug+'.dxf');status.textContent='DXFの保存を開始しました。';track('download_dxf','dxf');}catch{status.textContent='DXFを作成できませんでした。SVG保存もご利用ください。';}}
     else{save(new Blob([svg],{type:'image/svg+xml;charset=utf-8'}),slug+'.svg');status.textContent='SVGの保存を開始しました。';track('download_svg','svg');}}).finally(()=>finishBusy(token));}
   });
@@ -290,7 +298,7 @@
   form.addEventListener('input',invalidatePNG);form.addEventListener('change',invalidatePNG);form.addEventListener('reset',invalidatePNG);
   document.getElementById('new-seed')?.addEventListener('click',invalidatePNG);for(const preset of form.querySelectorAll('[data-preset]'))preset.addEventListener('click',invalidatePNG);
   const restore=()=>{
-   if(!location.hash.startsWith('#art='))return;invalidatePNG();
+   if(output.shareURL||!location.hash.startsWith('#art='))return;invalidatePNG();
    try{const s=decode(location.hash,G);if(s){for(const[k,v]of Object.entries(s))form.elements.namedItem(k).value=v;const actual=G.normalize(read());if(Object.keys(s).some(k=>s[k]!==actual[k]))throw Error('この画面で扱えない設定のため、復元できません。');render();generationStatus.textContent='共有された図形・配色を復元しました。';}}
    catch(e){for(const[k,v]of Object.entries(G.defaults))form.elements.namedItem(k).value=v;render();generationStatus.textContent=e.message+' 初期設定を表示しています。';}
   };

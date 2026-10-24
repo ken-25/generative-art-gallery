@@ -31,6 +31,8 @@ const {dxf}=require('../assets/share.js');
  const browser=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
  try{
   const page=await browser.newPage({acceptDownloads:true});const errors=[];
+  // This suite freezes all 24 generator-v1/2D paths; spatial defaults are covered separately.
+  const navigate2D=page.goto.bind(page);page.goto=(url,options)=>{const u=new URL(url);if(u.pathname.includes('/works/'))u.searchParams.set('view','2d');return navigate2D(u.href,options);};
   await page.addInitScript(()=>{
    const toBlob=HTMLCanvasElement.prototype.toBlob;
    HTMLCanvasElement.prototype.toBlob=function(callback,...args){window.__pngConversions=(window.__pngConversions||0)+1;return toBlob.call(this,blob=>{if(window.__holdPNG)window.__releasePNG=()=>{window.__releasePNG=null;callback(blob);};else callback(blob);},...args);};

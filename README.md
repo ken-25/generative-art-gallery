@@ -24,6 +24,10 @@ python3 -m http.server 8000 --directory dist
 
 [http://localhost:8000/](http://localhost:8000/) を開きます。ビルド結果は `dist/` に出力されます。
 
+## 作品詳細の2D／3D表示
+
+作品一覧から各作品の詳細を開きます。ローレンツの軌道と辺をたどる影は3D、重なる六つの辺・近い点の領域・書き換えて育つ枝は2Dを初期表示とし、同じ詳細ページ内で表示を切り替えられます。3Dでは作品に効く設定を調整し、共通の保存・共有からPNG・STLや設定入りURLを取得できます。旧2D共有URLと既存24作品のPNG・SVG・DXF保存は維持しています。構成と検証範囲は [表示と検証の記録](docs/3d-preview.md) を参照してください。
+
 ## テスト
 
 ```sh
@@ -45,3 +49,9 @@ npm run test:browser
 ## ライセンス
 
 [MITライセンス](LICENSE)で公開しています。[第三者コードのライセンス・クレジット](THIRD_PARTY_NOTICES.md)もご覧ください。
+
+3D の実画面検証（ビルド後に専用のローカルサーバーを自動起動）:
+
+```sh
+CHROMIUM_PATH=/usr/bin/chromium node scripts/sculpture-browser.cjs
+```

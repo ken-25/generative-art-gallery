@@ -29,7 +29,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
  const baseline=(await catalog(path.resolve('works'))).length;
  const dir=await mkdtemp(path.join(tmpdir(),'gallery 日本語 space-'));
  try {
-  for(const file of ['answers','assets','works','templates','scripts','index.html','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md']) {
+  for(const file of ['sculpture','answers','assets','works','templates','scripts','index.html','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md']) {
    try{await stat(file);}catch{continue;}
    await cp(file,path.join(dir,file),{recursive:true});
   }
@@ -44,7 +44,7 @@ test('two folder-only additions enter deterministic HTML, catalog and sitemap',a
   const list=JSON.parse(await readFile(`${dir}/dist/catalog.json`));assert.equal(list.length,baseline+2);assert.ok(html.includes(String(baseline+2).padStart(2,'0')+' WORKS'));assert.ok(lists.includes('&lt;b&gt; &amp; &quot; title $$ $&amp; $`'));
   for(const slug of ['alpha','beta'])assert.ok((await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8')).includes('<title>&lt;b&gt; &amp; &quot; title $$ $&amp; $` — Generative Art Gallery</title>'));
   for(const slug of ['alpha','beta']){assert.match(lists,new RegExp(`href="works/${slug}/"`));assert.match(map,new RegExp(`https://example.org/sub/works/${slug}/`));const rendered=await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8');assert.match(rendered,/target="_blank" rel="noopener noreferrer"/);assert.match(rendered,/class="external-link-note">（新しいタブ）/);assert.match(rendered,/class="brand-mark" src="\.\.\/\.\.\/assets\/brand\/mark-32.svg"/);assert.match(rendered,/sizes="16x16" href="\.\.\/\.\.\/assets\/brand\/favicon-16.png"/);const m=list.find(x=>x.slug===slug);assert.match(await readFile(`${dir}/dist/works/${slug}/index.html`,'utf8'),new RegExp('<p class="eyebrow">'+String(m.number).padStart(3,'0')+' / [A-Z]'));}
-  assert.doesNotMatch(html,/<script/);assert.match(html,/fetchpriority="high"/);
+  assert.doesNotMatch(html,/data-sculpture|assets\/sculpture.mjs|3D アトリエ/);assert.doesNotMatch(html,/<script(?![^>]*src=)/);assert.match(html,/fetchpriority="high"/);
   assert.doesNotMatch(html,/theme-nav|theme-section/);assert.equal((html.match(/class="work-card"/g)||[]).length,Math.min(baseline+2,20));assert.equal((lists.match(/class="work-card"/g)||[]).length,baseline+2);assert.match(html,/twitter:card/);assert.match(html,/og:image:alt/);await assert.rejects(stat(`${dir}/dist/assets/analytics.js`));
   execFileSync(process.execPath,[path.join(dir,'scripts/build.mjs')],{cwd:dir,env:{...process.env,SITE_URL:'https://example.org/sub/',GOOGLE_TAG_ENABLED:'true',GOOGLE_TAG_ID:'G-TEST000000'}});
   assert.doesNotMatch(await readFile(`${dir}/dist/answers/index.html`,'utf8'),/data-google-tag-|assets\/analytics.js/);

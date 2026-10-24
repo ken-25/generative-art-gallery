@@ -3,12 +3,15 @@
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test scripts/*.test.mjs works/*/*.test.cjs",
-    "test:browser": "node scripts/studio-dom.cjs"
+    "test:browser": "node scripts/studio-dom.cjs && node scripts/sculpture-browser.cjs"
   },
   "engines": {
     "node": ">=22"
   },
   "devDependencies": {
     "playwright": "1.62.1"
+  },
+  "dependencies": {
+    "three": "0.180.0"
   }
 }
