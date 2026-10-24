@@ -1,6 +1,7 @@
 /* Shared presentation; generator v1 normalization and geometry stay unchanged. */
 (() => {
  'use strict';
+ if(window.ArtworkView?.is3D)return;
  const G=window.StudyGenerator,form=document.getElementById('settings'),art=document.getElementById('art'),status=document.getElementById('status');
  const actions=document.getElementById('actions'),fields=new Map(),groups=new Map();
  for(const [key,value] of Object.entries(G.defaults)){

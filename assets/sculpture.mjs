@@ -1,34 +1,83 @@
 import * as T from './vendor/three.module.js';
 import {OrbitControls} from './vendor/OrbitControls.js';
 import {STLExporter} from './vendor/STLExporter.js';
-import {defaults,normalize,build,validate,works} from './sculpture-geometry.mjs';
-const root=document.querySelector('[data-sculpture]');
-if(root){
-const home=root.dataset.sculpture==='home',base=new URL('../',import.meta.url),names=['ローレンツの軌道','辺をたどる影','重なる六つの辺','近い点の領域','書き換えて育つ枝'];
-let state=normalize(Object.fromEntries(new URLSearchParams(location.search))),history=[],object,G;
-const initial={...state};
-const status=message=>root.querySelector('[role=status]').textContent=message;
-root.innerHTML=`<div class="sculpture-stage"><div class="stage-caption"><span class="eyebrow">FORM STUDY / 3D · 01</span><span>ドラッグで回転 · ピンチでズーム</span></div><div class="sculpture-canvas" tabindex="0" role="img" aria-label="立体作品。矢印キーで回転、プラスとマイナスでズーム"></div><div class="view-controls"><button data-view="perspective">立体</button><button data-view="front">正面</button><button data-view="top">上から</button><button data-action="rotate" aria-pressed="false">自動回転</button></div></div><div class="sculpture-panel"><p class="eyebrow">TOUCH THE RULE</p><h2>ルールを、立体に。</h2><p>まわして、近づいて。<br>角度の先に、別のかたち。</p><label>作品<select name="work">${works.map((w,i)=>`<option value="${w}">${names[i]}</option>`).join('')}</select></label><div class="sculpture-actions"><button data-action="recommend">おすすめ形状</button><button data-action="random">同じ作風で生成 ↻</button></div><label>かたちの密度 <input name="amount" type="range" min="8" max="80"></label><label>広がり <input name="spread" type="range" min="8" max="80"></label><label>色 <input name="color" type="color"></label><details><summary>詳細設定</summary><label>線の太さ <input name="thickness" type="range" min="0.5" max="3" step="0.1"></label><label>シード<input name="seed" maxlength="80"></label><label>添える形<select name="mount"><option value="none">なし</option><option value="base">台座</option><option value="hang">吊り下げリング</option></select></label><p>添える形も保存する立体に含まれます。</p></details><div class="sculpture-actions"><button data-action="undo">ひとつ戻す</button><button data-action="reset">最初に戻す</button></div><div class="sculpture-actions"><button data-action="stl" class="primary">STL を保存</button><button data-action="png">画像を保存</button></div><p class="file-note">STL は形状のみを保存します。色は画像に含まれます。座標の単位は mm として扱えます。</p><div class="sculpture-actions"><button data-action="share">共有 URL</button><button data-action="favorite">☆ お気に入り</button></div><details><summary>端末内のお気に入り</summary><div class="favorites"></div></details><p role="status" aria-live="polite"></p><a class="legacy-link">2D 作品と PNG / SVG / DXF →</a>${home?`<a href="${new URL('sculpture/',base)}" class="text-link">アトリエをひらく →</a>`:''}</div>`;
-const canvas=root.querySelector('.sculpture-canvas'),scene=new T.Scene();scene.background=new T.Color('#e8eae1');let renderer;
-try{renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));canvas.append(renderer.domElement);}catch{canvas.innerHTML='<p class="webgl-fallback">この端末では 3D 表示を開始できませんでした。下のリンクから 2D 作品を楽しめます。</p>';root.querySelectorAll('[data-action=png],[data-view],[data-action=rotate]').forEach(b=>b.disabled=true);}
-const camera=new T.PerspectiveCamera(38,1,.1,2000);camera.position.set(160,110,180);const controls=renderer?new OrbitControls(camera,renderer.domElement):null;if(controls){controls.enableDamping=true;controls.minDistance=40;controls.maxDistance=600;controls.enablePan=false;}
-scene.add(new T.HemisphereLight(0xffffff,0x53624c,3));const light=new T.DirectionalLight(0xffe9d2,4);light.position.set(80,150,100);scene.add(light);
-const dispose=()=>{if(object){scene.remove(object);object.traverse(m=>{m.geometry?.dispose();m.material?.dispose();});}};
-const outputButtons=()=>root.querySelectorAll('[data-action=stl],[data-action=png],[data-action=share],[data-action=favorite]');
-let revision=0;async function draw(){const rev=++revision;outputButtons().forEach(b=>b.disabled=true);status('かたちを生成しています…');for(const e of root.querySelectorAll('[name]'))e.value=state[e.name];root.querySelector('.legacy-link').href=new URL(`works/${state.work}/`,base);root.querySelector('[data-action=undo]').disabled=!history.length;try{await new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=new URL(`works/${state.work}/generator.js`,base);script.onload=()=>{script.remove();resolve();};script.onerror=reject;document.head.append(script);});if(rev!==revision)return;G=window.StudyGenerator;const next=build(state,G,window.StudyCore);validate(next);dispose();object=next;scene.add(object);outputButtons().forEach(b=>b.disabled=b.dataset.action==='png'&&!renderer);status('');if(!home){const u=new URL(location.href);u.search=new URLSearchParams(state);window.history.replaceState(null,'',u);}window.sculpture={get state(){return state;},get object(){return object;},validate:()=>validate(object)};}catch(e){if(rev!==revision)return;status('形状を生成できませんでした。おすすめ形状をお試しください。');console.error(e);}}
-function change(next){history.push({...state});if(history.length>30)history.shift();state=normalize(next);draw();}
-root.addEventListener('change',e=>{if(e.target.name)change({...state,[e.target.name]:e.target.value});});
-function save(blob,ext,work=state.work){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`${work}-3d-v1.${ext}`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-function favorites(){const host=root.querySelector('.favorites');host.replaceChildren();try{const list=JSON.parse(localStorage.getItem('sculpture-favorites')||'[]');list.forEach((s,i)=>{const b=document.createElement('button');b.textContent=`${i+1}. ${names[works.indexOf(s.work)]||'作品'} · ${s.seed}`;b.onclick=()=>change(s);host.append(b);});return list;}catch{return [];}}
-root.addEventListener('click',async e=>{const b=e.target.closest('button');if(!b)return;const action=b.dataset.action;if(b.dataset.view){controls?.reset();camera.position.set(...({perspective:[160,110,180],front:[0,0,260],top:[0,260,.01]}[b.dataset.view]));camera.lookAt(0,0,0);controls?.update();}
-if(action==='random')change({...state,seed:crypto.getRandomValues(new Uint32Array(1))[0].toString(36),amount:24+Math.floor(Math.random()*40),spread:15+Math.floor(Math.random()*55)});
-if(action==='recommend')change({...defaults,work:state.work});if(action==='reset')change(initial);if(action==='undo'&&history.length){state=history.pop();draw();}
-if(action==='rotate'&&controls){controls.autoRotate=!controls.autoRotate;b.setAttribute('aria-pressed',controls.autoRotate);}
-if(action==='stl'&&object){try{validate(object);save(new Blob([new STLExporter().parse(object,{binary:true})],{type:'model/stl'}),'stl');status('STL を保存しました。');}catch{status('保存できませんでした。');}}
-if(action==='png'&&renderer){const work=state.work;renderer.render(scene,camera);renderer.domElement.toBlob(blob=>{if(blob)save(blob,'png',work);});}
-if(action==='share'){const u=new URL('sculpture/',base);u.search=new URLSearchParams(state);try{await navigator.clipboard.writeText(u.href);status('共有 URL をコピーしました。');}catch{status(u.href);}}
-if(action==='favorite'){try{const list=favorites();list.push({...state});localStorage.setItem('sculpture-favorites',JSON.stringify(list.slice(-12)));favorites();status('この端末に保存しました。');}catch{status('この端末には保存できませんでした。');}}
-});
-canvas.addEventListener('keydown',e=>{const keys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','='];if(!keys.includes(e.key))return;e.preventDefault();if(!controls)return;const offset=camera.position.clone(),spherical=new T.Spherical().setFromVector3(offset);if(e.key==='ArrowLeft')spherical.theta-=.15;if(e.key==='ArrowRight')spherical.theta+=.15;if(e.key==='ArrowUp')spherical.phi-=.15;if(e.key==='ArrowDown')spherical.phi+=.15;if(['+','='].includes(e.key))spherical.radius*=.9;if(e.key==='-')spherical.radius*=1.1;spherical.makeSafe();spherical.radius=T.MathUtils.clamp(spherical.radius,40,600);camera.position.setFromSpherical(spherical);controls.update();});
-if(renderer){new ResizeObserver(()=>{const w=canvas.clientWidth,h=canvas.clientHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();}).observe(canvas);renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);});document.addEventListener('visibilitychange',()=>{controls.autoRotate=false;root.querySelector('[data-action=rotate]').setAttribute('aria-pressed','false');});}favorites();draw();
+import {build,validate} from './sculpture-geometry.mjs';
+import {profiles,defaultsFor,normalizeFor} from './sculpture-settings.mjs';
+
+const {work}=window.ArtworkView,G=window.StudyGenerator;
+const art=document.getElementById('art'),form=document.getElementById('settings');
+const defaults=normalizeFor(work,defaultsFor(work)),normalize=input=>normalizeFor(work,input);
+let state=normalize(Object.fromEntries(new URLSearchParams(location.search))),object,drawnKey;
+form.replaceChildren();
+const fields=new Map();
+for(const f of [...profiles[work],{key:'color',label:'色',help:'立体の色を変えます。'}]){
+ const div=document.createElement('div');div.className='field';div.dataset.control=f.key;
+ const label=document.createElement('label');label.htmlFor='sculpture-'+f.key;label.textContent=f.label;
+ const input=document.createElement('input');input.name=f.key;input.id=label.htmlFor;input.type=f.key==='color'?'color':'range';
+ if(input.type==='range')for(const k of ['min','max','step'])input[k]=f[k];
+ const output=document.createElement('output');output.htmlFor=input.id;label.append(output);
+ const help=document.createElement('p');help.id=input.id+'-help';help.textContent=f.help;input.setAttribute('aria-describedby',help.id);
+ div.append(label,input,help);form.append(div);fields.set(f.key,{input,output,definition:f});
 }
+for(const key of Object.keys(defaults))if(!fields.has(key)){
+ const input=document.createElement('input');input.type='hidden';input.name=key;form.append(input);fields.set(key,{input});
+}
+const reset=document.createElement('button');reset.type='reset';reset.textContent='設定をリセット';
+const actions=document.createElement('div');actions.id='actions';actions.append(reset);
+const status=document.createElement('p');status.id='status';status.setAttribute('role','status');actions.append(status);form.append(actions);
+const sync=()=>{for(const [key,{input,output,definition}] of fields){input.value=state[key];if(output){output.value=definition.display?definition.display(state[key]):state[key];if(input.type==='range')input.setAttribute('aria-valuetext',output.value);}}};
+const read=()=>Object.fromEntries([...fields].map(([key,{input}])=>[key,input.value]));
+sync();
+art.replaceChildren();art.classList.add('sculpture-art');
+const canvas=document.createElement('div');canvas.className='sculpture-canvas';canvas.tabIndex=0;canvas.setAttribute('role','img');canvas.setAttribute('aria-label','3D作品。矢印キーで回転、プラスとマイナスで拡大・縮小');art.append(canvas);
+const hint=document.createElement('p');hint.className='operation-hint';hint.textContent='ドラッグで回転・ホイールやピンチで拡大';art.after(hint);
+const viewReset=document.createElement('button');viewReset.type='button';viewReset.className='view-reset';viewReset.textContent='視点を戻す';art.append(viewReset);
+const scene=new T.Scene();scene.background=new T.Color('#e8eae1');
+const camera=new T.PerspectiveCamera(38,1,.1,2000);camera.position.set(160,110,180);
+scene.add(new T.HemisphereLight(0xffffff,0x53624c,3));const light=new T.DirectionalLight(0xffe9d2,4);light.position.set(80,150,100);scene.add(light);
+let renderer,controls;
+try{
+ renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));canvas.append(renderer.domElement);
+ controls=new OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.enablePan=false;controls.minDistance=40;controls.maxDistance=600;controls.update();controls.saveState();
+}catch{
+ canvas.innerHTML='<p class="webgl-fallback">この端末では3D表示を開始できませんでした。上の「2D」から作品を開けます。</p>';viewReset.disabled=true;
+}
+function dispose(){if(!object)return;scene.remove(object);object.traverse(m=>{m.geometry?.dispose();m.material?.dispose();});}
+function render(){
+ state=normalize(read());sync();const key=JSON.stringify(state);if(key===drawnKey)return;
+ try{const next=build(state,G,window.StudyCore);validate(next);dispose();object=next;scene.add(object);drawnKey=key;art.removeAttribute('aria-busy');status.textContent='';}
+ catch{art.setAttribute('aria-busy','true');status.textContent='形状を生成できませんでした。設定をリセットしてお試しください。';}
+}
+form.addEventListener('submit',e=>e.preventDefault());
+form.addEventListener('input',render);form.addEventListener('change',render);
+form.addEventListener('reset',e=>{e.preventDefault();state={...defaults};sync();render();status.textContent='設定を初期値に戻しました。';});
+viewReset.addEventListener('click',()=>controls?.reset());
+canvas.addEventListener('keydown',e=>{
+ if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','='].includes(e.key)||!controls)return;e.preventDefault();
+ // Stop residual drag damping before applying a keyboard step.
+ controls.update();const spherical=new T.Spherical().setFromVector3(camera.position);
+ if(e.key==='ArrowLeft')spherical.theta-=.15;if(e.key==='ArrowRight')spherical.theta+=.15;
+ if(e.key==='ArrowUp')spherical.phi-=.15;if(e.key==='ArrowDown')spherical.phi+=.15;
+ if(['+','='].includes(e.key))spherical.radius*=.9;if(e.key==='-')spherical.radius*=1.1;
+ spherical.makeSafe();spherical.radius=T.MathUtils.clamp(spherical.radius,40,600);camera.position.setFromSpherical(spherical);controls.update();
+});
+if(renderer){
+ const resize=()=>{const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};
+ new ResizeObserver(resize).observe(canvas);resize();renderer.setAnimationLoop(()=>{controls.update();renderer.render(scene,camera);});
+}
+render();
+const model={defaults,normalize,slug:work,title:G.title};
+window.ArtShare.attach(model,render,{
+ formats:[['png','PNG画像'],['stl','STL']],
+ shareURL:s=>{const url=new URL(location.href);url.pathname=url.pathname.replace(/index\.html$/,'');url.search=new URLSearchParams({view:'3d',...s});url.hash='';return url.href;},
+ imageKey:()=>camera.position.toArray().join(',')+'|'+camera.quaternion.toArray().join(',')+'|'+camera.aspect,
+ download:kind=>{if(kind!=='stl'||art.hasAttribute('aria-busy'))throw Error('No geometry');validate(object);return new Blob([new STLExporter().parse(object,{binary:true})],{type:'model/stl'});},
+ pngBlob:async edge=>{
+  if(!renderer||art.hasAttribute('aria-busy'))throw Error('No rendering');
+  const oldSize=renderer.getSize(new T.Vector2()),ratio=renderer.getPixelRatio(),aspect=camera.aspect;
+  const scale=edge/Math.max(oldSize.x,oldSize.y);renderer.setPixelRatio(1);renderer.setSize(Math.round(oldSize.x*scale),Math.round(oldSize.y*scale),false);renderer.render(scene,camera);
+  try{return await new Promise((resolve,reject)=>renderer.domElement.toBlob(b=>b?resolve(b):reject(Error('No PNG'))));}
+  finally{renderer.setPixelRatio(ratio);renderer.setSize(oldSize.x,oldSize.y,false);camera.aspect=aspect;camera.updateProjectionMatrix();}
+ }
+});
+window.sculpture={get state(){return {...state};},get object(){return object;},get camera(){return camera;},validate:()=>validate(object)};

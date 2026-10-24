@@ -1,24 +1,18 @@
-# 3D gallery preview (local, unpublished)
+# Artwork detail preview (unpublished)
 
-The first 3D release adds a shared atelier at `sculpture/` and one interactive hero on each static collection page. The 20-per-page list, permanent artwork numbers, original artwork routes, all 24 generator-v1 implementations and their PNG/SVG/DXF paths are preserved. Five artwork pages link to their 3D atelier. Cards use existing static previews and badges; they do not create WebGL contexts.
+The collection links directly to the existing `works/<slug>/` detail pages. The five spatial studies use the same artwork heading, notes, settings layout, and Save/Share dialogs as the original 2D gallery. There is no collection-level editor or artwork select menu. Lorenz and octahedral paths initially open in 3D; nested hexagons, Voronoi and branching rules initially open in 2D. Their alternate view is available on the same detail route. The other 19 artworks keep their existing UI.
 
-`assets/sculpture-geometry.mjs` defines a separate `mode=sculpture&version=1` state. It calls the existing normalized geometry API without changing 2D defaults or random sequences. Lorenz uses its XYZ trajectory, octahedral paths use selected edges on XYZ vertices, hexagons loft related polygon layers, Voronoi makes relief faces, and branching rules lift the generated growth segments into space. Shape state, color, seed, and optional mount travel in the URL; camera orbit is a viewing operation and is not saved. History retains 30 states and local favorites retain the latest 12 states. Reset restores the initial URL state.
+`?view=3d` selects the spatial view; `?view=2d` selects the original view. Every archived `#art=` URL selects generator-v1 2D, even when a conflicting view query is present. No generator-v1 implementation or compatibility fixture changed. The previous `sculpture/?work=...` preview route only forwards to the corresponding detail page.
 
-STL is binary, contains geometry only, and uses coordinates interpreted as millimetres. PNG captures the current camera and color. Optional base and hanging ring are included in exported geometry; the hanging connector starts at a real highest vertex. Geometry validation detects empty, non-finite and zero-area triangles. Tests additionally check welded boundary-edge counts, coherent edge orientation and positive volume for each component at low/default/high densities. These software checks do not establish physical performance, and do not check self-intersection or perform a Boolean union between touching components.
+The 3D view exposes only effective controls for the selected artwork. Geometry limits also bound the controls: hexagon layers stop at 14 and their rotation at 45 degrees. There are no recommendations, random multi-setting changes, undo history, favorites, or mount controls. Settings reset restores the artwork's defaults; a separate view reset restores its camera. PNG/STL are selected inside Save, and links/PNG use the existing Share dialog. Shared 3D settings restore on the corresponding detail route. Camera orbit is a viewing operation and is not saved in the URL; PNG captures the current camera.
 
-Three.js 0.180.0 is bundled locally from the official npm package under MIT. The only vendor adjustment is relative imports in OrbitControls and STLExporter. There is no CDN runtime dependency, new service, account, analytics setting, permission or secret. The static Pages build remains the deployment format.
+Three.js 0.180.0, OrbitControls and STLExporter remain bundled locally. `sculpture-geometry.mjs` retains the previous geometry-v1 implementation: Lorenz's XYZ trajectory, XYZ octahedral edges, lofted hexagon layers, Voronoi relief and lifted branching segments. The shared dialog accepts a renderer adapter for image capture, available formats, and the detail URL; its original SVG/PNG/DXF path is preserved.
 
 ## Verification
 
-- `npm test`: 111 tests passed, zero failures (includes 7 3D tests and the exact SVG generator-v1 regression corpus).
-- `npm run build`: 24 artworks / 2 static collection pages.
-- `CHROMIUM_PATH=/usr/bin/chromium npm run test:browser`: passed: all 24 artworks at 1440 and 375 px, 96 SVG/PNG pixel comparisons, 4 mobile sizes, 72 archived SVGs, static pagination, dialogs and sharing; zero JS/network errors.
-- `node scripts/sculpture-browser.cjs`: desktop and 375 px, five shapes, PNG decoding, binary STL re-read, deterministic URL reload, share URL, undo/reset, keyboard rotation/zoom, view controls, local favorites, optional mounts, second list page, legacy 2D and forced WebGL-unavailable fallback.
-- Independent read-only review: six initial issues fixed and re-reviewed; no remaining major findings. Two subsequent minor findings (PNG filename capture and stale error revision) also fixed.
-- Real screenshots and downloaded files are in ignored `evidence/`; screenshots are taken by Chromium from the built site. No generated illustration is substituted for a screenshot.
+- `npm test`: 112 tests, including deterministic STL readback, closed geometry, and an effective-change check for every adjacent value exposed by each 3D range control.
+- `npm run build`: 24 artworks / 2 collection pages.
+- `CHROMIUM_PATH=/usr/bin/chromium npm run test:browser`: the existing 24-work 2D suite plus integrated 3D desktop/mobile coverage. This includes archived 2D URLs, 96 SVG/PNG comparisons, four mobile sizes, PNG/STL downloads, nondefault 3D share restoration, effective controls, keyboard input, distinct setting/camera resets, button alignment and WebGL fallback.
+- `CHROMIUM_PATH=/usr/bin/chromium node scripts/sculpture-browser.cjs --screenshots`: updates the four owner-review images in `review-preview/`. The nested-hexagon image shows its optional 3D detail view; its default remains 2D.
 
-Not run: real mobile hardware and GPU matrix, physical output tests, full 3D treatment of the remaining 19 artworks. Intersections between separate rods/components are not fused. Their existing 2D features remain available.
-
-Library upload was not performed: the current prepared-upload helper failed before preparation at hosted apps tools/list with a network error. All screenshots remain in `/workspace/generative-art-gallery/evidence/`; there are no confirmed library_file_id values.
-
-No publication, deployment, remote push, PR creation or main mutation is part of this preview. Owner screenshot review is the next step.
+No PR, main merge, publication, deployment or Library transfer is part of this review branch.

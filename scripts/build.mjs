@@ -86,7 +86,7 @@ export async function build() {
  const number=m=>String(m.number).padStart(3,'0');
  const image=m=>m&&new URL(`works/${m.slug}/${m.preview}`,base).href;
  const sculpted=['lorenz-orbit','octahedral-paths','nested-hexagons','voronoi-relaxation','branching-rules'];
- const card=(m,i,prefix)=>`<a class="work-card" href="${prefix}works/${m.slug}/"><div class="card-art">${sculpted.includes(m.slug)?'<span class="sculpture-badge">3D アトリエ</span>':''}<img src="${prefix}works/${m.slug}/${m.preview}" width="320" height="320" ${i?'loading="lazy"':'fetchpriority="high"'} alt="${escape(m.title)}のプレビュー" style="width:100%;height:100%;object-fit:contain"></div><div class="card-copy"><p class="eyebrow">${number(m)} / ${escape(m.tags.join(' · ').toUpperCase())}</p><h3>${escape(m.title)}</h3><p>${escape(m.description)}</p><span class="text-link">作品をひらく →</span></div></a>`;
+ const card=(m,i,prefix)=>`<a class="work-card" href="${prefix}works/${m.slug}/"><div class="card-art"><img src="${prefix}works/${m.slug}/${m.preview}" width="320" height="320" ${i?'loading="lazy"':'fetchpriority="high"'} alt="${escape(m.title)}のプレビュー" style="width:100%;height:100%;object-fit:contain"></div><div class="card-copy"><p class="eyebrow">${number(m)} / ${escape(m.tags.join(' · ').toUpperCase())}</p><h3>${escape(m.title)}</h3><p>${escape(m.description)}</p><span class="text-link">作品をひらく →</span></div></a>`;
  const template=await readFile('templates/index.html','utf8'),ordered=newestFirst(works),pages=paginate(ordered);
  if(!pages.length)pages.push([]);
  for(const [index,items] of pages.entries()) {
@@ -100,7 +100,7 @@ export async function build() {
  }
  for(const m of works) {
   const file=`dist/works/${m.slug}/index.html`;
-  let html=await readFile(file,'utf8'); if(sculpted.includes(m.slug))html=html.replace('</header>',`</header><a class="sculpture-entry" href="../../sculpture/?work=${m.slug}">この作品を立体で触る →</a>`).replace('</head>','<link rel="stylesheet" href="../../assets/sculpture.css"></head>'); html=html.replace(/(<p class="eyebrow">)\d{3} \//,`$1${number(m)} /`);
+  let html=await readFile(file,'utf8'); if(sculpted.includes(m.slug))html=html.replace('<script src="../../assets/study-ui.js" defer>', '<script src="../../assets/work-view.js" defer></script><script src="../../assets/study-ui.js" defer>').replace('</head>','<link rel="stylesheet" href="../../assets/sculpture.css"></head>'); html=html.replace(/(<p class="eyebrow">)\d{3} \//,`$1${number(m)} /`);
   await writeFile(file,seo(html,m.title+' — Generative Art Gallery',m.description,new URL(`works/${m.slug}/`,base).href,image(m),infos.get(m.slug)));
  }
  await writeFile('dist/about/index.html',seo((await readFile('about/index.html','utf8')).replace('<!-- MEASUREMENT -->',()=>googleTagId?'<section class="terms" id="measurement"><h2>アクセス計測について</h2><p>サイト改善のため、アクセスや保存・共有の利用状況を集計しています。</p><p>Google AnalyticsとCookie等を利用します。詳しくは<a href="https://policies.google.com/privacy">Googleのプライバシーポリシー</a>をご覧ください。</p></section>':''),'このギャラリーについて — Generative Art Gallery','ルールから生まれる形を、触って楽しむ。目的・利用条件・参加方法。',new URL('about/',base).href,image(ordered[0]),infos.get(ordered[0]?.slug)));
