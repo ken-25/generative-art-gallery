@@ -15,4 +15,4 @@ Three.js 0.180.0, OrbitControls and STLExporter remain bundled locally. `sculptu
 - `CHROMIUM_PATH=/usr/bin/chromium npm run test:browser`: the existing 24-work 2D suite plus integrated 3D desktop/mobile coverage. This includes archived 2D URLs, 96 SVG/PNG comparisons, four mobile sizes, PNG/STL downloads, nondefault 3D share restoration, effective controls, keyboard input, distinct setting/camera resets, button alignment and WebGL fallback.
 - `CHROMIUM_PATH=/usr/bin/chromium node scripts/sculpture-browser.cjs --screenshots`: updates the four owner-review images in `review-preview/`. The nested-hexagon image shows its optional 3D detail view; its default remains 2D.
 
-No PR, main merge, publication, deployment or Library transfer is part of this review branch.
+Owner-review screenshots are stored in `review-preview/`; they are not copied into the generated site in `dist/`.
