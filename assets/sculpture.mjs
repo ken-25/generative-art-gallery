@@ -51,15 +51,19 @@ function render(){
 form.addEventListener('submit',e=>e.preventDefault());
 form.addEventListener('input',render);form.addEventListener('change',render);
 form.addEventListener('reset',e=>{e.preventDefault();state={...defaults};sync();render();status.textContent='設定を初期値に戻しました。';});
-viewReset.addEventListener('click',()=>controls?.reset());
+function withSettledControls(action){
+ if(!controls)return;const damping=controls.enableDamping;controls.enableDamping=false;
+ try{controls.update();action();}finally{controls.enableDamping=damping;}
+}
+viewReset.addEventListener('click',()=>withSettledControls(()=>controls.reset()));
 canvas.addEventListener('keydown',e=>{
  if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','-','='].includes(e.key)||!controls)return;e.preventDefault();
- // Stop residual drag damping before applying a keyboard step.
- controls.update();const spherical=new T.Spherical().setFromVector3(camera.position);
+ // Drain the remaining drag rotation before applying a discrete keyboard step.
+ withSettledControls(()=>{const spherical=new T.Spherical().setFromVector3(camera.position);
  if(e.key==='ArrowLeft')spherical.theta-=.15;if(e.key==='ArrowRight')spherical.theta+=.15;
  if(e.key==='ArrowUp')spherical.phi-=.15;if(e.key==='ArrowDown')spherical.phi+=.15;
  if(['+','='].includes(e.key))spherical.radius*=.9;if(e.key==='-')spherical.radius*=1.1;
- spherical.makeSafe();spherical.radius=T.MathUtils.clamp(spherical.radius,40,600);camera.position.setFromSpherical(spherical);controls.update();
+ spherical.makeSafe();spherical.radius=T.MathUtils.clamp(spherical.radius,40,600);camera.position.setFromSpherical(spherical);controls.update();});
 });
 if(renderer){
  const resize=()=>{const w=canvas.clientWidth,h=canvas.clientHeight;if(!w||!h)return;renderer.setSize(w,h);camera.aspect=w/h;camera.updateProjectionMatrix();};

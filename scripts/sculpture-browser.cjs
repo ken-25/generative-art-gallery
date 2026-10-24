@@ -48,6 +48,10 @@ const works=['lorenz-orbit','octahedral-paths','nested-hexagons','voronoi-relaxa
     if(work==='nested-hexagons'&&width===1440)await page.screenshot({path:`${output}/nested-hexagons-desktop.png`,fullPage:true});
     if(work==='lorenz-orbit'&&width===375)await page.screenshot({path:`${output}/lorenz-orbit-mobile.png`,fullPage:true});
     const initial=await page.evaluate(()=>sculpture.state),initialGeometry=await geometry(),initialCamera=await camera();
+    await page.locator('.sculpture-canvas').scrollIntoViewIfNeeded();const canvasBox=await page.locator('.sculpture-canvas').boundingBox();
+    await page.mouse.move(canvasBox.x+canvasBox.width*.3,canvasBox.y+canvasBox.height*.4);await page.mouse.down();await page.mouse.move(canvasBox.x+canvasBox.width*.65,canvasBox.y+canvasBox.height*.6,{steps:3});await page.mouse.up();
+    await page.getByRole('button',{name:'視点を戻す',exact:true}).click();
+    for(let i=0;i<8;i++){await page.evaluate(()=>new Promise(requestAnimationFrame));assert.ok((await camera()).every((v,j)=>Math.abs(v-initialCamera[j])<1e-6),'pointer reset is stable after drag damping');}
     for(const input of await page.locator('#settings input[type=range],#settings input[type=color]').all()){
      const before=await geometry();await input.evaluate(e=>{e.value=e.type==='color'?'#386c73':String(Number(e.value)===Number(e.max)?Number(e.min):Math.min(Number(e.max),Number(e.value)+Number(e.step)));e.dispatchEvent(new Event('input',{bubbles:true}));});assert.notEqual(await geometry(),before,work+' '+await input.getAttribute('name')+' has an effect');
     }
