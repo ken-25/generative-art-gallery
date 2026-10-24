@@ -24,6 +24,10 @@ python3 -m http.server 8000 --directory dist
 
 [http://localhost:8000/](http://localhost:8000/) を開きます。ビルド結果は `dist/` に出力されます。
 
+## 3D アトリエ（ローカル初版）
+
+トップの立体作品と `sculpture/` で、代表5作品を回転・編集し、STL・PNG として保存できます。設定入り URL、直前状態へ戻す操作、端末内のお気に入り、任意の台座・吊り下げリングを備えています。既存24作品の2D画面とPNG・SVG・DXF保存はそのまま利用できます。構成と検証範囲は [3D初版の記録](docs/3d-preview.md) を参照してください。
+
 ## テスト
 
 ```sh
@@ -45,3 +49,9 @@ npm run test:browser
 ## ライセンス
 
 [MITライセンス](LICENSE)で公開しています。[第三者コードのライセンス・クレジット](THIRD_PARTY_NOTICES.md)もご覧ください。
+
+3D の実画面検証（上記のローカルサーバーを 8000 番で起動後）:
+
+```sh
+CHROMIUM_PATH=/usr/bin/chromium node scripts/sculpture-browser.cjs
+```

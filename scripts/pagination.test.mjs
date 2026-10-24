@@ -25,7 +25,7 @@ test('newest first by first publication, ties by slug, independent of folder ord
 
 async function site(count){
  const dir=await mkdtemp(path.join(tmpdir(),'gallery pages 日本語-'));
- for(const file of ['answers','assets','templates','scripts','index.html','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md'])await cp(file,path.join(dir,file),{recursive:true});
+ for(const file of ['sculpture','answers','assets','templates','scripts','index.html','.nojekyll','about','LICENSE','THIRD_PARTY_NOTICES.md','CONTRIBUTING.md'])await cp(file,path.join(dir,file),{recursive:true});
  const existing=await catalog(path.resolve('works'));await mkdir(`${dir}/works`);
  for(let i=0;i<count;i++){
   const source=existing[i%existing.length],slug=i<existing.length?source.slug:`extra-${String(i).padStart(2,'0')}`;
