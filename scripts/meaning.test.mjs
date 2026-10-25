@@ -1,0 +1,13 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHash} from 'node:crypto';
+import * as M from '../prototypes/meaning-dialogue/model.mjs';
+import {build,validate} from '../prototypes/meaning-dialogue/geometry.mjs';
+import {STLExporter} from '../assets/vendor/STLExporter.js';
+function bytes(input){const group=build(input);try{assert.ok(validate(group)>0);return Buffer.from(new STLExporter().parse(group,{binary:true}).buffer);}finally{group.traverse(m=>{m.geometry?.dispose();m.material?.dispose();});}}
+const digest=input=>createHash('sha256').update(bytes(input)).digest('hex');
+test('representative confirmed meanings produce distinct geometry, exactly replayed from saved input',()=>{const hashes=[];for(const {input} of M.examples){const saved=M.save(input);assert.deepEqual(M.load(saved),input);assert.deepEqual(bytes(input),bytes(M.load(saved)));hashes.push(digest(input));}assert.equal(new Set(hashes).size,3);});
+test('every semantic answer changes structure and real STL; text is not random personalization',()=>{const a=M.examples[0].input,base=digest(a);for(const patch of [{effect:'explore'},{effect:'connect'},{relation:'tension'},{relation:'alternate'},{frequency:1},{importance:1},{eventMeaning:'change'},{eventMeaning:'none'}]){assert.notDeepEqual(M.structure({...a,...patch}),M.structure(a));assert.notEqual(digest({...a,...patch}),base);}assert.equal(digest({...a,favorite:'別の言葉',value:'本人の別の表現',event:'説明を言い換えた'}),base);});
+test('all relation/effect/event combinations yield finite geometry without randomness',()=>{const a=M.examples[0].input;for(const effect of Object.keys(M.effects))for(const relation of Object.keys(M.relations))for(const eventMeaning of Object.keys(M.events)){const input={...a,effect,relation,eventMeaning};assert.deepEqual(bytes(input),bytes(input));}});
+test('invalid and incompatible recipes fail before replacing input',()=>{const a=M.examples[0].input;for(const patch of [{frequency:0},{importance:6},{effect:'unknown'},{relation:'__proto__'},{event:'',eventMeaning:'change'},{favorite:''},{favorite:'x'.repeat(301)}])assert.throws(()=>M.save({...a,...patch}));const saved=JSON.parse(M.save(a));assert.throws(()=>M.load('{'));assert.throws(()=>M.load('x'.repeat(12001)));assert.throws(()=>M.load(JSON.stringify({...saved,generator:'2'})));assert.throws(()=>M.load(JSON.stringify({...saved,result:{}})));assert.throws(()=>M.load(JSON.stringify({...saved,input:{...a,extra:1}})));});
+test('normalization and optional event are explicit; no event can imply an event meaning',()=>{const a={...M.examples[2].input,favorite:'  e\u0301  '};assert.equal(M.load(M.save(a)).favorite,'é');assert.equal(M.structure(a).arms,0);assert.ok(M.interpretation(a).join().includes('今回は'));});
